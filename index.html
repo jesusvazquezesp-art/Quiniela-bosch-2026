@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         .grupo-titulo { color: var(--accent); font-size: 20px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid var(--border); padding-bottom: 5px; text-align: center; }
 
         .partido-row { background: #111827; padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid var(--border); position: relative; overflow: hidden; }
-        .partido-meta { text-align: center; font-size: 11px; color: #64748b; margin-bottom: 8px; text-transform: uppercase; font-weight: bold; }
+        .partido-meta { text-align: center; font-size: 13px; color: #64748b; margin-bottom: 9px; text-transform: uppercase; font-weight: bold; }
         .partido-equipos { display: flex; align-items: center; justify-content: space-between; }
         
         .equipo-nombre { flex: 1; display: flex; flex-direction: column; justify-content: center; }
@@ -1080,13 +1080,11 @@ function cargarDetalleGrupo(grupo) {
 
             <div class="partido-row">
 
-                <div class="partido-meta">
-
-
-
-                    📅 ${info.fecha || 'N/A'} • ⏰ ${info.hora || ''} • 🏟️ ${info.estadio || 'Por asignar'}
-
-                </div>
+               <div class="partido-meta">
+    <div>📅 ${info.fecha || 'N/A'}</div>
+    <div>⏰ ${info.hora || ''}</div>
+    <div>🏟️ ${info.estadio || 'Por asignar'}</div>
+</div>
 
                 <div class="partido-equipos">
 
@@ -1235,14 +1233,39 @@ function cargarDetalleGrupo(grupo) {
                         <input type="number" value="${dbGoles[`elim_${faseIdx}_p${i}_V_pen`] ?? ""}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value, true)">
                     </div>` : "";
                 cont.innerHTML += `
-                    <div class="partido-row" style="${(equipoL && equipoV) ? "" : "opacity: 0.5;"}">
-                        <div class="partido-meta">Llave ${i + 1} • ${nombreLlaves[faseIdx]}</div>
-                        <div class="partido-equipos">
-                            <div class="equipo-nombre local"><div class="nombre-jugador">${equipoL?.nombre ?? "???"}</div><div class="nombre-pais">${equipoL ? obtenerBandera(equipoL.nombre) : ""} ${obtenerDueñoObj(equipoL?.nombre)}</div></div>
-                            <div class="marcador-container"><div class="marcador"><input type="number" value="${gl}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'L', this.value)"><span style="color:#64748b; font-size:12px;">VS</span><input type="number" value="${gv}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value)"></div>${penalesHTML}</div>
-                            <div class="equipo-nombre visita"><div class="nombre-jugador">${equipoV?.nombre ?? "???"}</div><div class="nombre-pais">${obtenerDueñoObj(equipoV?.nombre)} ${equipoV ? obtenerBandera(equipoV.nombre) : ""}</div></div>
-                        </div>
-                    </div>`;
+    <div class="partido-row" style="${(equipoL && equipoV) ? "" : "opacity: 0.5;"}">
+        <div class="partido-meta">Llave ${i + 1} • ${nombreLlaves[faseIdx]}</div>
+        <div class="partido-equipos">
+            
+            <div class="equipo-nombre local">
+                <div class="nombre-jugador" style="color: #22c55e; font-weight: bold;">
+                    ${obtenerDueñoObj(equipoL?.nombre) ?? "SIN ASIGNAR"}
+                </div>
+                <div class="nombre-pais" style="color: #64748b;">
+                    ${equipoL ? obtenerBandera(equipoL.nombre) : ""} ${equipoL?.nombre ?? "???"}
+                </div>
+            </div>
+
+            <div class="marcador-container">
+                <div class="marcador">
+                    <input type="number" value="${gl}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'L', this.value)">
+                    <span style="color:#64748b; font-size:12px;">VS</span>
+                    <input type="number" value="${gv}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value)">
+                </div>
+                ${penalesHTML}
+            </div>
+
+            <div class="equipo-nombre visita">
+                <div class="nombre-jugador" style="color: #22c55e; font-weight: bold;">
+                    ${obtenerDueñoObj(equipoV?.nombre) ?? "SIN ASIGNAR"}
+                </div>
+                <div class="nombre-pais" style="color: #64748b;">
+                    ${equipoV?.nombre ?? "???"} ${equipoV ? obtenerBandera(equipoV.nombre) : ""}
+                </div>
+            </div>
+
+        </div>
+    </div>`;
             }
             if (faseIdx === 4) {
                 let campeon = obtenerGanadorBracket(4, 0); 
