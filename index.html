@@ -144,6 +144,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
              
 <div class="sub-h">48 participantes (4800) un solo ganador</div>
    <div class="sub-h">Plataforma Oficial del Torneo</div>     
+
+        
         <div class="tabs">
             <button id="btn-tab-registro" class="tab-btn active">✍️ REGISTRO</button>
             <button id="btn-tab-grupos" class="tab-btn">📋 FASE GRUPOS</button>
@@ -224,7 +226,8 @@ async function sincronizarConNube() {
 
     const datosParaSubir = {
         participantes: dbParticipantes,
-        goles: dbGoles
+        goles: dbGoles,
+        llavesManual: dbLlavesManual
     };
 
     try {
@@ -265,6 +268,11 @@ async function descargarDesdeNube() {
         if (datos.record) {
             dbParticipantes = datos.record.participantes || [];
             dbGoles = datos.record.goles || {};
+            dbLlavesManual = datos.record.llavesManual || {};
+            
+            localStorage.setItem('bosch_participantes', JSON.stringify(dbParticipantes));
+            localStorage.setItem('bosch_goles', JSON.stringify(dbGoles));
+            localStorage.setItem('bosch_llaves_manual', JSON.stringify(dbLlavesManual));
         }
 
     } catch (error) {
@@ -867,6 +875,57 @@ async function descargarDesdeNube() {
     }
   ]
 };
+        
+        const calendarioEliminatorias = {
+  0: [ // 32vos
+    {fecha:"28-Jun-26", hora:"12:00", estadio:"Por definir"},
+    {fecha:"28-Jun-26", hora:"15:00", estadio:"Por definir"},
+    {fecha:"28-Jun-26", hora:"18:00", estadio:"Por definir"},
+    {fecha:"28-Jun-26", hora:"21:00", estadio:"Por definir"},
+
+    {fecha:"29-Jun-26", hora:"12:00", estadio:"Por definir"},
+    {fecha:"29-Jun-26", hora:"15:00", estadio:"Por definir"},
+    {fecha:"29-Jun-26", hora:"18:00", estadio:"Por definir"},
+    {fecha:"29-Jun-26", hora:"21:00", estadio:"Por definir"},
+
+    {fecha:"30-Jun-26", hora:"12:00", estadio:"Por definir"},
+    {fecha:"30-Jun-26", hora:"15:00", estadio:"Por definir"},
+    {fecha:"30-Jun-26", hora:"18:00", estadio:"Por definir"},
+    {fecha:"30-Jun-26", hora:"21:00", estadio:"Por definir"},
+
+    {fecha:"01-Jul-26", hora:"12:00", estadio:"Por definir"},
+    {fecha:"01-Jul-26", hora:"15:00", estadio:"Por definir"},
+    {fecha:"01-Jul-26", hora:"18:00", estadio:"Por definir"},
+    {fecha:"01-Jul-26", hora:"21:00", estadio:"Por definir"}
+  ],
+
+  1: [ // Octavos
+    {fecha:"04-Jul-26", hora:"12:00", estadio:"Por definir"},
+    {fecha:"04-Jul-26", hora:"18:00", estadio:"Por definir"},
+    {fecha:"05-Jul-26", hora:"12:00", estadio:"Por definir"},
+    {fecha:"05-Jul-26", hora:"18:00", estadio:"Por definir"},
+    {fecha:"06-Jul-26", hora:"12:00", estadio:"Por definir"},
+    {fecha:"06-Jul-26", hora:"18:00", estadio:"Por definir"},
+    {fecha:"07-Jul-26", hora:"12:00", estadio:"Por definir"},
+    {fecha:"07-Jul-26", hora:"18:00", estadio:"Por definir"}
+  ],
+
+  2: [ // Cuartos
+    {fecha:"10-Jul-26", hora:"15:00", estadio:"Por definir"},
+    {fecha:"10-Jul-26", hora:"20:00", estadio:"Por definir"},
+    {fecha:"11-Jul-26", hora:"15:00", estadio:"Por definir"},
+    {fecha:"11-Jul-26", hora:"20:00", estadio:"Por definir"}
+  ],
+
+  3: [ // Semis
+    {fecha:"14-Jul-26", hora:"18:00", estadio:"Por definir"},
+    {fecha:"15-Jul-26", hora:"18:00", estadio:"Por definir"}
+  ],
+
+  4: [ // Final
+    {fecha:"19-Jul-26", hora:"18:00", estadio:"MetLife Stadium"}
+  ]
+};
 
 let esAdmin = false;
         let grupoSeleccionadoGlobal = "Grupo A";
@@ -911,12 +970,15 @@ let esAdmin = false;
 
         let dbParticipantes = [];
         let dbGoles = {};
+        let dbLlavesManual = {};
         try {
             dbParticipantes = JSON.parse(localStorage.getItem('bosch_participantes')) || [];
             dbGoles = JSON.parse(localStorage.getItem('bosch_goles')) || {};
+            dbLlavesManual = JSON.parse(localStorage.getItem('bosch_llaves_manual')) || {};
         } catch(e) {
             localStorage.removeItem('bosch_participantes');
             localStorage.removeItem('bosch_goles');
+            localStorage.removeItem('bosch_llaves_manual');
         }
 
         function toggleAdminMode() {
@@ -1042,86 +1104,93 @@ let esAdmin = false;
             let p = dbParticipantes.find(x => x.equipo === equipo);
             return p ? p.nombre : "Sin Asignar";
         }
+        
+        function guardarLlaveManual(fase, partido, local, visita) {
+
+    dbLlavesManual[`${fase}_${partido}`] = {
+        local: local,
+        visita: visita
+    };
+
+    localStorage.setItem(
+        'bosch_llaves_manual',
+        JSON.stringify(dbLlavesManual)
+    );
+
+    alert("Llave corregida");
+}
+        
+        function editarLlave(fase, partido) {
+
+    let actual = dbLlavesManual[`${fase}_${partido}`] || {};
+
+    let local = prompt(
+        "Equipo local:",
+        actual.local || ""
+    );
+
+    if (local === null) return;
+
+    let visita = prompt(
+        "Equipo visitante:",
+        actual.visita || ""
+    );
+
+    if (visita === null) return;
+
+    guardarLlaveManual(
+        fase,
+        partido,
+        local,
+        visita
+    );
+
+    verFaseEliminatoria(fase);
+}
+        
 
 // Reemplaza tu función cargarDetalleGrupo por esta:
 function cargarDetalleGrupo(grupo) {
-
     const teams = mapaGrupos[grupo];
-
     const partidos = obtenerPartidosDeGrupo(teams);
-
     const cont = document.getElementById('dinamico-lista-partidos');
-
     cont.innerHTML = "";
 
-    
-
     partidos.forEach((p, idx) => {
-
-        // CORRECCIÓN: Si el partido no existe o no tiene datos, ponemos valores por defecto
-
         const info = calendarioCompleto[grupo] && calendarioCompleto[grupo][idx] 
-
                      ? calendarioCompleto[grupo][idx] 
-
-                     : {fecha:'Por definir', hora:'', local:'', visita:'', estadio: 'Por asignar'};
-
+                     : {fecha:'Por definir', hora:'', local:p.l, visita:p.v, estadio: 'Por asignar'};
         
-
-        let gl = dbGoles[`${grupo}_p${idx}_L`] !== undefined ? dbGoles[`${grupo}_p${idx}_L`] : "";
-
-        let gv = dbGoles[`${grupo}_p${idx}_V`] !== undefined ? dbGoles[`${grupo}_p${idx}_V`] : "";
-
+        let gl = dbGoles[`${grupo}_p${idx}_L`] ?? "";
+        let gv = dbGoles[`${grupo}_p${idx}_V`] ?? "";
+        // El modo edición solo está habilitado si es administrador
         let est = esAdmin ? "" : "disabled";
 
-        
-
         cont.innerHTML += `
-
             <div class="partido-row">
-
                <div class="partido-meta">
-    <div>⏰ ${info.hora || ''}</div>
-    <div>📅 ${info.fecha || 'N/A'}</div>
-    <div>🏟️ ${info.estadio || 'Por asignar'}</div>
-</div>
-
-                <div class="partido-equipos">
-
-                    <div class="equipo-nombre local">
-
-                        <div class="nombre-jugador">${obtenerDueñoObj(p.l)}</div>
-
-                        <div class="nombre-pais">${obtenerBandera(p.l)} ${p.l}</div>
-
-                    </div>
-
-                    <div class="marcador-container">
-
-                        <div class="marcador">
-
-                            <input type="number" value="${gl}" ${est} oninput="guardarGol('${grupo}', ${idx}, 'L', this.value)">
-
-                            <span style="color:#64748b; font-size:12px;">VS</span>
-
-                            <input type="number" value="${gv}" ${est} oninput="guardarGol('${grupo}', ${idx}, 'V', this.value)">
-
-                        </div>
-
-                    </div>
-
-                    <div class="equipo-nombre visita">
-
-                        <div class="nombre-jugador">${obtenerDueñoObj(p.v)}</div>
-
-                        <div class="nombre-pais">${p.v} ${obtenerBandera(p.v)}</div>
-
-                    </div>
-
+                    <div>⏰ ${info.hora || ''}</div>
+                    <div>📅 ${info.fecha || 'N/A'}</div>
+                    <div>🏟️ ${info.estadio || 'Por asignar'}</div>
                 </div>
-
+                <div class="partido-equipos">
+                    <div class="equipo-nombre local">
+                        <div class="nombre-jugador">${obtenerDueñoObj(p.l)}</div>
+                        <div class="nombre-pais">${obtenerBandera(p.l)} ${p.l}</div>
+                    </div>
+                    <div class="marcador-container">
+                        <div class="marcador">
+                            <input type="number" value="${gl}" ${est} oninput="guardarGol('${grupo}', ${idx}, 'L', this.value)">
+                            <span style="color:#64748b; font-size:12px;">VS</span>
+                            <input type="number" value="${gv}" ${est} oninput="guardarGol('${grupo}', ${idx}, 'V', this.value)">
+                        </div>
+                    </div>
+                    <div class="equipo-nombre visita">
+                        <div class="nombre-jugador">${obtenerDueñoObj(p.v)}</div>
+                        <div class="nombre-pais">${p.v} ${obtenerBandera(p.v)}</div>
+                    </div>
+                </div>
             </div>`;
-
     }); 
     renderTablaGrupo(grupo, teams);
 }
@@ -1221,50 +1290,80 @@ function cargarDetalleGrupo(grupo) {
             const cont = document.getElementById('lista-partidos-eliminatorias');
             cont.innerHTML = "";
             for (let i = 0; i < numMatches; i++) {
-                let equipoL = obtenerGanadorBracket(faseIdx - 1, i * 2);
-                let equipoV = obtenerGanadorBracket(faseIdx - 1, i * 2 + 1);
+                const info = calendarioEliminatorias[faseIdx]?.[i] || {};
+                let override = dbLlavesManual[`${faseIdx}_${i}`];
+
+let equipoL = override
+    ? { nombre: override.local }
+    : obtenerGanadorBracket(faseIdx - 1, i * 2);
+
+let equipoV = override
+    ? { nombre: override.visita }
+    : obtenerGanadorBracket(faseIdx - 1, i * 2 + 1);
+                
+                
                 let gl = dbGoles[`elim_${faseIdx}_p${i}_L`] ?? "";
-                let gv = dbGoles[`elim_${faseIdx}_p${i}_V`] ?? "";
-                let est = (esAdmin && equipoL && equipoV) ? "" : "disabled";
-                let penalesHTML = (gl !== "" && gv !== "" && gl === gv) ? `
-                    <div class="penales-box"><span>Penales:</span>
-                        <input type="number" value="${dbGoles[`elim_${faseIdx}_p${i}_L_pen`] ?? ""}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'L', this.value, true)">
-                        <span>-</span>
-                        <input type="number" value="${dbGoles[`elim_${faseIdx}_p${i}_V_pen`] ?? ""}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value, true)">
-                    </div>` : "";
+let gv = dbGoles[`elim_${faseIdx}_p${i}_V`] ?? "";
+let est = (esAdmin && equipoL && equipoV) ? "" : "disabled";
+
+let penalesHTML = (gl !== "" && gv !== "" && gl === gv) ? `
+    <div class="penales-box"><span>Penales:</span>
+        <input type="number" value="${dbGoles[`elim_${faseIdx}_p${i}_L_pen`] ?? ""}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'L', this.value, true)">
+        <span>-</span>
+        <input type="number" value="${dbGoles[`elim_${faseIdx}_p${i}_V_pen`] ?? ""}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value, true)">
+    </div>` : "";
+                
+                let botonesAdmin = esAdmin ? `
+<div style="margin-top:8px;text-align:center;">
+    <button onclick="editarLlave(${faseIdx},${i})">
+        ✏️ Corregir
+    </button>
+
+    <button onclick="eliminarLlaveManual(${faseIdx},${i})">
+        🗑️ Quitar
+    </button>
+</div>
+` : "";
+                
                 cont.innerHTML += `
     <div class="partido-row" style="${(equipoL && equipoV) ? "" : "opacity: 0.5;"}">
-        <div class="partido-meta">Llave ${i + 1} • ${nombreLlaves[faseIdx]}</div>
+
+
+
+
+<div class="partido-meta">
+    <div>⏰ ${info.hora || ''}</div>
+    <div>📅 ${info.fecha || ''}</div>
+    <div>🏟️ ${info.estadio || 'Por definir'}</div>
+    <div>🔥 Llave ${i + 1} • ${nombreLlaves[faseIdx]}</div>
+${override ? '<div style="color:#f59e0b;font-weight:bold;">🔧 Ajustada por Administrador</div>' : ''}
+</div>
+
         <div class="partido-equipos">
             
-            <div class="equipo-nombre local">
-                <div class="nombre-jugador" style="color: #22c55e; font-weight: bold;">
-                    ${obtenerDueñoObj(equipoL?.nombre) ?? "SIN ASIGNAR"}
-                </div>
-                <div class="nombre-pais" style="color: #64748b;">
-                    ${equipoL ? obtenerBandera(equipoL.nombre) : ""} ${equipoL?.nombre ?? "???"}
-                </div>
-            </div>
+           <div class="equipo-nombre local">
+    <div class="nombre-jugador" style="color: #22c55e;">${obtenerDueñoObj(equipoL?.nombre) ?? "SIN ASIGNAR"}</div>
+    <div class="nombre-pais" style="color: #64748b;">${equipoL ? obtenerBandera(equipoL.nombre) : ""} ${equipoL?.nombre ?? "???"}</div>
+</div>
+                         
 
-            <div class="marcador-container">
-                <div class="marcador">
-                    <input type="number" value="${gl}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'L', this.value)">
-                    <span style="color:#64748b; font-size:12px;">VS</span>
-                    <input type="number" value="${gv}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value)">
-                </div>
-                ${penalesHTML}
-            </div>
-
+<div class="marcador-container">
+    <div class="marcador">
+        <input type="number" value="${gl}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'L', this.value)">
+        <span style="color:#64748b; font-size:12px;">VS</span>
+        <input type="number" value="${gv}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value)">
+    </div>
+    ${penalesHTML}
+</div>
+                          
+                          
             <div class="equipo-nombre visita">
-                <div class="nombre-jugador" style="color: #22c55e; font-weight: bold;">
-                    ${obtenerDueñoObj(equipoV?.nombre) ?? "SIN ASIGNAR"}
-                </div>
-                <div class="nombre-pais" style="color: #64748b;">
-                    ${equipoV?.nombre ?? "???"} ${equipoV ? obtenerBandera(equipoV.nombre) : ""}
-                </div>
-            </div>
+    <div class="nombre-jugador" style="color: #22c55e;">${obtenerDueñoObj(equipoV?.nombre) ?? "SIN ASIGNAR"}</div>
+    <div class="nombre-pais" style="color: #64748b;">${equipoV?.nombre ?? "???"} ${equipoV ? obtenerBandera(equipoV.nombre) : ""}</div>
+</div>
 
         </div>
+${botonesAdmin}
     </div>`;
             }
             if (faseIdx === 4) {
@@ -1272,6 +1371,78 @@ function cargarDetalleGrupo(grupo) {
                 if (campeon) cont.innerHTML += `<div class="campeon-box">🏆 ¡TENEMOS CAMPEÓN! 🏆<div class="campeon-dueño">${obtenerDueñoObj(campeon.nombre)} - ${obtenerBandera(campeon.nombre)} ${campeon.nombre}</div></div>`;
             }
         }
+        
+        function setEquipoManual(fase, matchIdx, lado, nombreEquipo) {
+    let keyManual = `manual_${fase}_${matchIdx}_${lado}`;
+    localStorage.setItem(keyManual, nombreEquipo);
+    verFaseEliminatoria(fase); // Recarga para mostrar el cambio
+}
+        
+        function guardarLlaveManual(fase, partido, local, visita) {
+
+    dbLlavesManual[`${fase}_${partido}`] = {
+        local: local,
+        visita: visita
+    };
+
+    localStorage.setItem(
+        'bosch_llaves_manual',
+        JSON.stringify(dbLlavesManual)
+    );
+
+    sincronizarConNube();
+
+    alert("Llave corregida");
+}
+    
+    function editarLlave(fase, partido) {
+
+    let actual = dbLlavesManual[`${fase}_${partido}`] || {};
+
+    let local = prompt(
+        "Equipo Local:",
+        actual.local || ""
+    );
+
+    if (local === null) return;
+
+    let visita = prompt(
+        "Equipo Visitante:",
+        actual.visita || ""
+    );
+
+    if (visita === null) return;
+
+    guardarLlaveManual(
+        fase,
+        partido,
+        local,
+        visita
+    );
+
+    verFaseEliminatoria(fase);
+}
+
+function eliminarLlaveManual(fase, partido) {
+
+    if (!confirm("¿Eliminar corrección manual y volver al cálculo automático?")) {
+        return;
+    }
+
+    delete dbLlavesManual[`${fase}_${partido}`];
+
+    localStorage.setItem(
+        'bosch_llaves_manual',
+        JSON.stringify(dbLlavesManual)
+    );
+
+    sincronizarConNube();
+
+    verFaseEliminatoria(fase);
+}
+    
+        
+            
 
         // ... al final de tu archivo, donde tienes el bloque de carga:
 
@@ -1279,16 +1450,20 @@ async function iniciarApp() {
     console.log("Iniciando carga de datos...");
     await descargarDesdeNube();
     
-    // Solo cuando los datos existen, renderizamos la interfaz
+    // IMPORTANTE: Aseguramos que las bases de datos tengan valores iniciales
+    dbParticipantes = dbParticipantes || [];
+    dbGoles = dbGoles || {};
+    dbLlavesManual = dbLlavesManual || {};
+    
+    // Ahora renderizamos
     actualizarSelectEquipos();
     renderListaAsignados();
     construirMenuGrupos();
-    verFaseEliminatoria(0);
-    actualizarPermisosRegistro();
     
+    
+        
     console.log("¡Quiniela sincronizada y lista!");
 }
-
 // Ejecutamos la app
 iniciarApp().catch(err => {
     console.error("Error al cargar la quiniela: ", err);
