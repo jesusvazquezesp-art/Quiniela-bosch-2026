@@ -107,6 +107,85 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         
         .campeon-box { background: linear-gradient(45deg, #d97706, #fbbf24); color: black; font-size: 22px; font-weight: bold; text-align: center; padding: 25px; border-radius: 10px; margin-top: 20px; box-shadow: 0 0 20px rgba(251, 191, 36, 0.4); border: 2px solid white; }
         .campeon-dueño { font-size: 14px; color: #000; font-weight: normal; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .estado-partido {
+    margin-top: 6px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.estado-previo {
+    background: rgba(251,191,36,.15);
+    color: #fbbf24;
+}
+
+.estado-vivo {
+    background: rgba(34,197,94,.15);
+    color: #22c55e;
+}
+
+.estado-finalizado {
+    background: rgba(239,68,68,.15);
+    color: #ef4444;
+}
+
+.reloj-global {
+    text-align:center;
+    font-size:14px;
+    color:#fbbf24;
+    margin-bottom:10px;
+    font-weight:bold;
+}
+        
+        .proximos-box {
+    background: #111827;
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.proximos-titulo {
+    text-align: center;
+    color: var(--accent);
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+.proximo-item {
+    padding: 10px;
+    border-bottom: 1px solid #334155;
+}
+
+.proximo-item:last-child {
+    border-bottom: none;
+}
+
+.proximo-equipos {
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+}
+
+.proximo-grupo {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.proximo-tiempo {
+    text-align: center;
+    color: var(--secondary);
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 8px;
+}
+        
     </style>
 </head>
 <body>
@@ -128,13 +207,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     <div class="container">
         <div class="admin-bar">
-            <span id="admin-status">🔒 Modo Lectura (Registos bloqueados)</span>
-            <button class="admin-btn" id="btn-lock" onclick="toggleAdminMode()">Desbloquear</button>
-        </div>
+    <span id="admin-status">🔒 Modo Lectura (Registos bloqueados)</span>
 
+    <button class="admin-btn"
+            id="btn-lock"
+            onclick="toggleAdminMode()">
+        Desbloquear
+    </button>
 
+    <button class="admin-btn"
+        id="btnActualizarDatos"
+        onclick="forzarActualizacion()"
+        style="display:none;">
+    🔄 Actualizar Datos
+</button>
+</div>
 
-         <h1 style="font-size: 20px; text-align: center;">
+<div id="reloj-global" class="reloj-global">
+🕒 Cargando hora...
+</div>
+
+         <h1 style="font-size: 22px; text-align: center;">
     🏆 QUINIELA <span class="text-rojo">BOSCH</span> 2026</h1> 
 
         <h1 style="font-size: 22px; text-align: center;">
@@ -142,7 +235,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         
              
-<div class="sub-h">25 Jugadores ($4800) un solo ganador</div>
+<div class="sub-h">48 participantes (4800) un solo ganador</div>
    <div class="sub-h">Plataforma Oficial del Torneo</div>     
 
         
@@ -170,6 +263,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
 
         <div id="panel-grupos" class="panel active">
+            <div id="proximos-partidos-box"></div>
             <div id="menu-grupos-grid" class="grupos-grid"></div>
             <div id="vista-grupo-detalle" style="display: none;">
                 <button class="back-btn" onclick="regresarAlMenuGrupos()">← Volver al Menú</button>
@@ -254,16 +348,17 @@ async function descargarDesdeNube() {
 
     try {
 
-        const respuesta = await fetch(
-            `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`,
-            {
-                headers: {
-                    "X-Master-Key": MASTER_KEY
-                }
-            }
-        );
-
-        const datos = await respuesta.json();
+      const response = await fetch(
+    `https://api.jsonbin.io/v3/b/${BIN_ID}?t=${Date.now()}`,
+    {
+        method: "GET",
+        cache: "no-store",
+        headers: {
+            "X-Master-Key": MASTER_KEY
+        }
+    }
+);
+        const datos = await response.json();
 
         if (datos.record) {
             dbParticipantes = datos.record.participantes || [];
@@ -989,12 +1084,14 @@ let esAdmin = false;
                     document.getElementById('admin-status').textContent = "🔓 Modo Administrador Activo";
                     document.getElementById('btn-lock').textContent = "Bloquear";
                     document.getElementById('btn-lock').classList.add('unlocked');
+                    document.getElementById("btnActualizarDatos").style.display = "inline-block";
                 } else { alert("PIN Incorrecto."); }
             } else {
                 esAdmin = false;
                 document.getElementById('admin-status').textContent = "🔒 Modo Lectura (Registros bloqueados)";
                 document.getElementById('btn-lock').textContent = "Desbloquear";
                 document.getElementById('btn-lock').classList.remove('unlocked');
+                document.getElementById("btnActualizarDatos").style.display = "none";
             }
             if(document.getElementById('panel-registro').classList.contains('active')) renderListaAsignados();
             if(document.getElementById('panel-grupos').classList.contains('active')) cargarDetalleGrupo(grupoSeleccionadoGlobal);
@@ -1025,6 +1122,8 @@ let esAdmin = false;
             if(boton) boton.disabled = !esAdmin;
         }
 
+        
+        document.getElementById('btn-tab-registro').style.display = 'none'; 
         document.getElementById('btn-tab-registro').addEventListener('click', () => switchTab('registro'));
         document.getElementById('btn-tab-grupos').addEventListener('click', () => switchTab('grupos'));
         document.getElementById('btn-tab-eliminatorias').addEventListener('click', () => switchTab('eliminatorias'));
@@ -1169,10 +1268,11 @@ function cargarDetalleGrupo(grupo) {
         cont.innerHTML += `
             <div class="partido-row">
                <div class="partido-meta">
-                    <div>⏰ ${info.hora || ''}</div>
-                    <div>📅 ${info.fecha || 'N/A'}</div>
-                    <div>🏟️ ${info.estadio || 'Por asignar'}</div>
-                </div>
+    <div>⏰ ${info.hora || ''}</div>
+    <div>📅 ${info.fecha || 'N/A'}</div>
+    <div>🏟️ ${info.estadio || 'Por asignar'}</div>
+   ${obtenerEstadoPartido(info.fecha, info.hora, gl, gv)}
+</div>
                 <div class="partido-equipos">
                     <div class="equipo-nombre local">
                         <div class="nombre-jugador">${obtenerDueñoObj(p.l)}</div>
@@ -1335,6 +1435,7 @@ let penalesHTML = (gl !== "" && gv !== "" && gl === gv) ? `
     <div>⏰ ${info.hora || ''}</div>
     <div>📅 ${info.fecha || ''}</div>
     <div>🏟️ ${info.estadio || 'Por definir'}</div>
+${obtenerEstadoPartido(info.fecha, info.hora, gl, gv)}
     <div>🔥 Llave ${i + 1} • ${nombreLlaves[faseIdx]}</div>
 ${override ? '<div style="color:#f59e0b;font-weight:bold;">🔧 Ajustada por Administrador</div>' : ''}
 </div>
@@ -1440,9 +1541,231 @@ function eliminarLlaveManual(fase, partido) {
 
     verFaseEliminatoria(fase);
 }
-    
+ 
         
-            
+        function convertirFechaPartido(fechaStr, horaStr) {
+
+    const meses = {
+        Jan:0, Feb:1, Mar:2, Apr:3,
+        May:4, Jun:5, Jul:6, Aug:7,
+        Sep:8, Oct:9, Nov:10, Dec:11
+    };
+
+    const partes = fechaStr.split("-");
+    const dia = parseInt(partes[0]);
+    const mes = meses[partes[1]];
+    const anio = 2000 + parseInt(partes[2]);
+
+    const hora = horaStr.split(":");
+
+    return new Date(
+        anio,
+        mes,
+        dia,
+        parseInt(hora[0]),
+        parseInt(hora[1]),
+        0
+    );
+}
+
+function obtenerEstadoPartido(fechaStr, horaStr, gl = null, gv = null) {
+
+    if (!fechaStr || !horaStr) return "";
+
+    const ahora = new Date();
+    const inicio = convertirFechaPartido(fechaStr, horaStr);
+
+    // Duración estimada del partido
+    const fin = new Date(inicio.getTime() + (2 * 60 * 60 * 1000));
+
+    const diferencia = inicio - ahora;
+
+    // Antes de iniciar
+    if (diferencia > 0) {
+
+        const dias = Math.floor(diferencia / 86400000);
+        const horas = Math.floor((diferencia % 86400000) / 3600000);
+        const minutos = Math.floor((diferencia % 3600000) / 60000);
+        const segundos = Math.floor((diferencia % 60000) / 1000);
+
+        return `
+        <div class="estado-partido estado-previo">
+            ⏳ Inicia en:<br>
+            ${dias}d ${horas}h ${minutos}m ${segundos}s
+        </div>`;
+    }
+
+    // Durante el partido
+    if (ahora >= inicio && ahora <= fin) {
+
+        return `
+        <div class="estado-partido estado-vivo">
+            🔴 EN JUEGO
+        </div>`;
+    }
+
+    // Si ya capturaste resultado
+    if (gl !== "" && gl !== null &&
+        gv !== "" && gv !== null &&
+        gl !== undefined &&
+        gv !== undefined) {
+
+        return `
+        <div class="estado-partido estado-vivo">
+            ✅ RESULTADO CAPTURADO
+        </div>`;
+    }
+
+    // Terminó pero aún no capturas resultado
+    return `
+    <div class="estado-partido estado-finalizado">
+        🟡 ESPERANDO RESULTADOS
+    </div>`;
+}
+function actualizarRelojGlobal() {
+
+    const ahora = new Date();
+
+    const texto =
+        "🕒 " +
+        ahora.toLocaleDateString() +
+        " " +
+        ahora.toLocaleTimeString();
+
+    const reloj =
+        document.getElementById("reloj-global");
+
+    if (reloj) {
+        reloj.innerHTML = texto;
+    }
+}
+        
+        function mostrarProximosPartidos() {
+
+    const ahora = new Date();
+
+    let lista = [];
+
+    for (let grupo in calendarioCompleto) {
+
+        calendarioCompleto[grupo].forEach(partido => {
+
+            if (!partido.fecha || !partido.hora) return;
+
+            const fechaObj =
+                convertirFechaPartido(
+                    partido.fecha,
+                    partido.hora
+                );
+
+            if (fechaObj > ahora) {
+
+                lista.push({
+                    grupo,
+                    ...partido,
+                    fechaObj
+                });
+
+            }
+
+        });
+    }
+
+    lista.sort(
+        (a,b) =>
+        a.fechaObj - b.fechaObj
+    );
+
+    lista = lista.slice(0,3);
+
+    let html = `
+    <div class="proximos-box">
+        <div class="proximos-titulo">
+            🔥 PRÓXIMOS PARTIDOS
+        </div>
+    `;
+
+    lista.forEach(p => {
+
+        const diff =
+            p.fechaObj - ahora;
+
+        const dias =
+            Math.floor(diff / 86400000);
+
+        const horas =
+            Math.floor(
+                (diff % 86400000) /
+                3600000
+            );
+
+        const minutos =
+            Math.floor(
+                (diff % 3600000) /
+                60000
+            );
+
+        const segundos =
+            Math.floor(
+                (diff % 60000) /
+                1000
+            );
+
+        html += `
+        <div class="proximo-item">
+
+            <div class="proximo-equipos">
+                ${p.local} 🆚 ${p.visita}
+            </div>
+
+            <div class="proximo-grupo">
+                📋 ${p.grupo}
+            </div>
+
+            <div class="proximo-tiempo">
+                ⏳ ${dias}d ${horas}h ${minutos}m ${segundos}s
+            </div>
+
+        </div>
+        `;
+    });
+
+    html += `</div>`;
+
+    const box =
+        document.getElementById(
+            "proximos-partidos-box"
+        );
+
+    if (box) {
+        box.innerHTML = html;
+    }
+}
+     
+       async function forzarActualizacion() {
+
+    try {
+
+        await descargarDesdeNube();
+
+        if(document.getElementById('panel-grupos').classList.contains('active')) {
+            cargarDetalleGrupo(grupoSeleccionadoGlobal);
+        }
+
+        if(document.getElementById('panel-eliminatorias').classList.contains('active')) {
+            verFaseEliminatoria(faseEliminatoriaGlobal);
+        }
+
+        alert("✅ Datos actualizados desde la nube");
+
+    } catch(error) {
+
+        console.error(error);
+        alert("❌ Error al actualizar");
+
+    }
+}
+        
 
         // ... al final de tu archivo, donde tienes el bloque de carga:
 
@@ -1460,13 +1783,23 @@ async function iniciarApp() {
     renderListaAsignados();
     construirMenuGrupos();
     
-    
-console.log("Estado inicial esAdmin =", esAdmin);
-actualizarPermisosRegistro();
-    
+    actualizarRelojGlobal();
         
     console.log("¡Quiniela sincronizada y lista!");
 }
+        setInterval(() => {
+
+    actualizarRelojGlobal();
+            mostrarProximosPartidos();
+
+    if (
+        document.getElementById('panel-grupos')
+        .classList.contains('active')
+    ) {
+        cargarDetalleGrupo(grupoSeleccionadoGlobal);
+    }
+
+}, 1000);
 // Ejecutamos la app
 iniciarApp().catch(err => {
     console.error("Error al cargar la quiniela: ", err);
