@@ -216,17 +216,22 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
   
     <div class="container">
-        <div class="admin-bar">
-   <span id="admin-status" style="font-size:10px;">
-    🔒 Modo Lectura (Registros bloqueados)
-</span>
+   <div class="admin-bar">
+    <span id="admin-status">🔒 Modo Lectura (Registos bloqueados)</span>
 
-   <button class="admin-btn"
-        id="btn-lock"
-        onclick="toggleAdminMode()"
-        style="font-size:10px;">
-    Desbloquear
-</button>
+    <button class="admin-btn"
+            id="btn-lock"
+            onclick="toggleAdminMode()">
+        Desbloquear
+    </button>
+
+    <button class="admin-btn"
+            id="btnWhatsapp"
+            onclick="compartirWhatsApp()"
+            style="display:none;">
+        📲 WhatsApp
+    </button>
+</div>
             
     <button class="admin-btn"
         id="btnActualizarDatos"
@@ -1083,6 +1088,7 @@ let esAdmin = false;
         let dbParticipantes = [];
         let dbGoles = {};
         let dbLlavesManual = {};
+        let ultimoMarcadorActualizado = null;
         try {
             dbParticipantes = JSON.parse(localStorage.getItem('bosch_participantes')) || [];
             dbGoles = JSON.parse(localStorage.getItem('bosch_goles')) || {};
@@ -1102,6 +1108,7 @@ let esAdmin = false;
                     document.getElementById('btn-lock').textContent = "Bloquear";
                     document.getElementById('btn-lock').classList.add('unlocked');
                     document.getElementById("btnActualizarDatos").style.display = "inline-block";
+                    document.getElementById("btnWhatsapp").style.display = "inline-block";
                 } else { alert("PIN Incorrecto."); }
             } else {
                 esAdmin = false;
@@ -1109,6 +1116,7 @@ let esAdmin = false;
                 document.getElementById('btn-lock').textContent = "Desbloquear";
                 document.getElementById('btn-lock').classList.remove('unlocked');
                 document.getElementById("btnActualizarDatos").style.display = "none";
+                document.getElementById("btnWhatsapp").style.display = "none";
             }
             if(document.getElementById('panel-registro').classList.contains('active')) renderListaAsignados();
             if(document.getElementById('panel-grupos').classList.contains('active')) cargarDetalleGrupo(grupoSeleccionadoGlobal);
@@ -1312,11 +1320,36 @@ function cargarDetalleGrupo(grupo) {
 }
 
         function guardarGol(g, idx, lado, val) {
-            let key = `${g}_p${idx}_${lado}`;
-            if (val === "") delete dbGoles[key]; else dbGoles[key] = parseInt(val);
-            localStorage.setItem('bosch_goles', JSON.stringify(dbGoles));sincronizarConNube();
-            renderTablaGrupo(g, mapaGrupos[g]);
-        }
+    let key = `${g}_p${idx}_${lado}`;
+
+    if (val === "") {
+        delete dbGoles[key];
+    } else {
+        dbGoles[key] = parseInt(val);
+    }
+
+    const teams = mapaGrupos[g];
+    const partidos = obtenerPartidosDeGrupo(teams);
+    const partido = partidos[idx];
+
+    let gl = dbGoles[`${g}_p${idx}_L`];
+    let gv = dbGoles[`${g}_p${idx}_V`];
+
+    if (gl !== undefined && gv !== undefined) {
+        ultimoMarcadorActualizado = {
+            tipo: "Grupo",
+            grupo: g,
+            local: partido.l,
+            visita: partido.v,
+            golesLocal: gl,
+            golesVisita: gv
+        };
+    }
+
+    localStorage.setItem('bosch_goles', JSON.stringify(dbGoles));
+    sincronizarConNube();
+    renderTablaGrupo(g, mapaGrupos[g]);
+}
 
         function calcularStatsGrupo(grupo, teams) {
             let stats = teams.map(t => ({ nombre: t, pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, dif: 0, pts: 0 }));
@@ -1389,6 +1422,29 @@ function cargarDetalleGrupo(grupo) {
     } else {
         dbGoles[key] = parseInt(val);
     }
+
+    let equipoL = obtenerGanadorBracket(fase - 1, matchIdx * 2);
+    let equipoV = obtenerGanadorBracket(fase - 1, matchIdx * 2 + 1);
+
+    let gl = dbGoles[`elim_${fase}_p${matchIdx}_L`];
+    let gv = dbGoles[`elim_${fase}_p${matchIdx}_V`];
+
+    if (equipoL && equipoV && gl !== undefined && gv !== undefined) {
+        ultimoMarcadorActualizado = {
+            tipo: "Eliminatoria",
+            fase: fase,
+            llave: matchIdx + 1,
+            local: equipoL.nombre,
+            visita: equipoV.nombre,
+            golesLocal: gl,
+            golesVisita: gv
+        };
+    }
+
+    localStorage.setItem('bosch_goles', JSON.stringify(dbGoles));
+    sincronizarConNube();
+    verFaseEliminatoria(fase);
+}
 
     localStorage.setItem('bosch_goles', JSON.stringify(dbGoles));
 
@@ -1772,7 +1828,38 @@ function actualizarRelojGlobal() {
 
     }
 }
-        
+        function compartirWhatsApp() {
+
+    if (!esAdmin) {
+        alert("Solo el administrador puede compartir.");
+        return;
+    }
+
+    if (!ultimoMarcadorActualizado) {
+        alert("Aún no hay marcador actualizado para compartir.");
+        return;
+    }
+
+    const m = ultimoMarcadorActualizado;
+
+    const mensaje =
+`🏆 Quiniela Bosch 2026
+
+⚽ Resultado actualizado
+
+${m.local} ${m.golesLocal} - ${m.golesVisita} ${m.visita}
+
+📋 ${m.tipo === "Grupo" ? m.grupo : "Eliminatoria - Llave " + m.llave}
+
+Consulta la quiniela:
+https://jesusvazquezesp-art.github.io/Quiniela-bosch-2026/`;
+
+    const url =
+        "https://wa.me/?text=" +
+        encodeURIComponent(mensaje);
+
+    window.open(url, "_blank");
+}
 
 async function iniciarApp() {
     console.log("Iniciando carga de datos...");
