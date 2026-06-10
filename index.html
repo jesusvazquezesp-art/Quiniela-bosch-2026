@@ -86,24 +86,40 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         .marcador-container { display: flex; flex-direction: column; align-items: center; gap: 5px; margin: 0 10px; }
         .marcador { display: flex; align-items: center; gap: 8px; }
-        .marcador input {
-    width: 68px;
-    height: 68px;
+       .marcador input {
+    width: 55px;
+    height: 55px;
     text-align: center;
     background: linear-gradient(180deg, #1e293b, #0f172a);
     color: #ffffff;
     border: 2px solid #64748b;
-    border-radius: 14px;
-    font-size: 34px;
+    border-radius: 12px;
+    font-size: 32px;
     font-weight: 900;
-    box-shadow: 0 0 12px rgba(255,255,255,.12);
+    box-shadow: 0 0 8px rgba(255,255,255,.12);
 }
-        .marcador input:disabled {
-    color: #cbd5e1;
-    background: linear-gradient(180deg, #263449, #111827);
-    cursor: not-allowed;
-    border: 2px dashed #475569;
+
+.marcador input:disabled {
     opacity: 1;
+    cursor: not-allowed;
+}
+
+.marcador-ganador {
+    background: linear-gradient(180deg, #22c55e, #15803d) !important;
+    color: white !important;
+    border: 2px solid #4ade80 !important;
+}
+
+.marcador-perdedor {
+    background: linear-gradient(180deg, #ef4444, #b91c1c) !important;
+    color: white !important;
+    border: 2px solid #f87171 !important;
+}
+
+.marcador-empate {
+    background: linear-gradient(180deg, #475569, #1e293b) !important;
+    color: white !important;
+    border: 2px solid #cbd5e1 !important;
 }
         
         .penales-box { display: flex; align-items: center; gap: 5px; background: rgba(251, 191, 36, 0.1); padding: 6px 10px; border-radius: 5px; border: 1px dashed var(--accent); margin-top: 4px; }
@@ -1300,6 +1316,25 @@ function cargarDetalleGrupo(grupo) {
         
         let gl = dbGoles[`${grupo}_p${idx}_L`] ?? "";
         let gv = dbGoles[`${grupo}_p${idx}_V`] ?? "";
+        let claseL = "";
+let claseV = "";
+
+if (gl !== "" && gv !== "") {
+
+    if (Number(gl) > Number(gv)) {
+        claseL = "marcador-ganador";
+        claseV = "marcador-perdedor";
+    }
+    else if (Number(gl) < Number(gv)) {
+        claseL = "marcador-perdedor";
+        claseV = "marcador-ganador";
+    }
+    else {
+        claseL = "marcador-empate";
+        claseV = "marcador-empate";
+    }
+
+}
         // El modo edición solo está habilitado si es administrador
         let est = esAdmin ? "" : "disabled";
 
@@ -1318,9 +1353,9 @@ function cargarDetalleGrupo(grupo) {
                     </div>
                     <div class="marcador-container">
                         <div class="marcador">
-                            <input type="number" value="${gl}" ${est} oninput="guardarGol('${grupo}', ${idx}, 'L', this.value)">
-                            <span style="color:#64748b; font-size:12px;">VS</span>
-                            <input type="number" value="${gv}" ${est} oninput="guardarGol('${grupo}', ${idx}, 'V', this.value)">
+<input class="${claseL}" type="number" value="${gl}" ${est} oninput="guardarGol('${grupo}', ${idx}, 'L', this.value)">
+<span style="color:#64748b; font-size:12px;">VS</span>
+<input class="${claseV}" type="number" value="${gv}" ${est} oninput="guardarGol('${grupo}', ${idx}, 'V', this.value)">
                         </div>
                     </div>
                     <div class="equipo-nombre visita">
@@ -1474,26 +1509,65 @@ function cargarDetalleGrupo(grupo) {
                 const info = calendarioEliminatorias[faseIdx]?.[i] || {};
                 let override = dbLlavesManual[`${faseIdx}_${i}`];
 
-let equipoL = override
-    ? { nombre: override.local }
-    : obtenerGanadorBracket(faseIdx - 1, i * 2);
-
-let equipoV = override
-    ? { nombre: override.visita }
-    : obtenerGanadorBracket(faseIdx - 1, i * 2 + 1);
-                
-                
-                let gl = dbGoles[`elim_${faseIdx}_p${i}_L`] ?? "";
+let gl = dbGoles[`elim_${faseIdx}_p${i}_L`] ?? "";
 let gv = dbGoles[`elim_${faseIdx}_p${i}_V`] ?? "";
 let est = (esAdmin && equipoL && equipoV) ? "" : "disabled";
 
-let penalesHTML = (gl !== "" && gv !== "" && gl === gv) ? `
-    <div class="penales-box"><span>Penales:</span>
-        <input type="number" value="${dbGoles[`elim_${faseIdx}_p${i}_L_pen`] ?? ""}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'L', this.value, true)">
+let claseL = "";
+let claseV = "";
+
+if (gl !== "" && gv !== "") {
+
+    if (Number(gl) > Number(gv)) {
+        claseL = "marcador-ganador";
+        claseV = "marcador-perdedor";
+    }
+    else if (Number(gl) < Number(gv)) {
+        claseL = "marcador-perdedor";
+        claseV = "marcador-ganador";
+    }
+    else {
+        claseL = "marcador-empate";
+        claseV = "marcador-empate";
+    }
+
+}
+
+let pL = dbGoles[`elim_${faseIdx}_p${i}_L_pen`] ?? "";
+let pV = dbGoles[`elim_${faseIdx}_p${i}_V_pen`] ?? "";
+
+let clasePenL = "";
+let clasePenV = "";
+
+if (pL !== "" && pV !== "") {
+
+    if (Number(pL) > Number(pV)) {
+        clasePenL = "marcador-ganador";
+        clasePenV = "marcador-perdedor";
+    }
+    else if (Number(pL) < Number(pV)) {
+        clasePenL = "marcador-perdedor";
+        clasePenV = "marcador-ganador";
+    }
+    else {
+        clasePenL = "marcador-empate";
+        clasePenV = "marcador-empate";
+    }
+
+}
+
+let penalesHTML = (gl !== "" && gv !== "" && Number(gl) === Number(gv)) ? `
+    <div class="penales-box">
+        <span>Penales:</span>
+
+        <input class="${clasePenL}" type="number" value="${pL}" ${est}
+               oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'L', this.value, true)">
+
         <span>-</span>
-        <input type="number" value="${dbGoles[`elim_${faseIdx}_p${i}_V_pen`] ?? ""}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value, true)">
-    </div>` : "";
-                
+
+        <input class="${clasePenV}" type="number" value="${pV}" ${est}
+               oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value, true)">
+    </div>` : "";                
                 let botonesAdmin = esAdmin ? `
 <div style="margin-top:8px;text-align:center;">
     <button onclick="editarLlave(${faseIdx},${i})">
@@ -1525,9 +1599,9 @@ ${override ? '<div style="color:#f59e0b;font-weight:bold;">🔧 Ajustada por Adm
 
 <div class="marcador-container">
     <div class="marcador">
-        <input type="number" value="${gl}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'L', this.value)">
-        <span style="color:#64748b; font-size:12px;">VS</span>
-        <input type="number" value="${gv}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value)">
+        <input class="${claseL}" type="number" value="${gl}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'L', this.value)">
+<span style="color:#64748b; font-size:12px;">VS</span>
+<input class="${claseV}" type="number" value="${gv}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value)">
     </div>
     ${penalesHTML}
 </div>         
