@@ -86,8 +86,25 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         .marcador-container { display: flex; flex-direction: column; align-items: center; gap: 5px; margin: 0 10px; }
         .marcador { display: flex; align-items: center; gap: 8px; }
-        .marcador input { width: 38px; height: 35px; text-align: center; background: #000; color: white; border: 1px solid var(--border); border-radius: 5px; font-size: 16px; font-weight: bold; }
-        .marcador input:disabled { color: #64748b; background: #1e293b; cursor: not-allowed; border-style: dashed; }
+        .marcador input {
+    width: 68px;
+    height: 68px;
+    text-align: center;
+    background: linear-gradient(180deg, #1e293b, #0f172a);
+    color: #ffffff;
+    border: 2px solid #64748b;
+    border-radius: 14px;
+    font-size: 34px;
+    font-weight: 900;
+    box-shadow: 0 0 12px rgba(255,255,255,.12);
+}
+        .marcador input:disabled {
+    color: #cbd5e1;
+    background: linear-gradient(180deg, #263449, #111827);
+    cursor: not-allowed;
+    border: 2px dashed #475569;
+    opacity: 1;
+}
         
         .penales-box { display: flex; align-items: center; gap: 5px; background: rgba(251, 191, 36, 0.1); padding: 6px 10px; border-radius: 5px; border: 1px dashed var(--accent); margin-top: 4px; }
         .penales-box span { font-size: 11px; color: var(--accent); font-weight: bold; text-transform: uppercase; }
