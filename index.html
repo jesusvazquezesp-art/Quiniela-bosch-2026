@@ -1497,133 +1497,154 @@ if (gl !== "" && gv !== "") {
 
    
 
-        function verFaseEliminatoria(faseIdx) {
-            faseEliminatoriaGlobal = faseIdx;
-            document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn-fase-' + faseIdx).classList.add('active');
-            let nombreLlaves = ["Clasificados", "Octavos de Final", "Cuartos de Final", "Semifinal", "Gran Final"];
-            let numMatches = [16, 8, 4, 2, 1][faseIdx];
-            const cont = document.getElementById('lista-partidos-eliminatorias');
-            cont.innerHTML = "";
-            for (let i = 0; i < numMatches; i++) {
-                const info = calendarioEliminatorias[faseIdx]?.[i] || {};
-                let override = dbLlavesManual[`${faseIdx}_${i}`];
+       function verFaseEliminatoria(faseIdx) {
+    faseEliminatoriaGlobal = faseIdx;
 
-let gl = dbGoles[`elim_${faseIdx}_p${i}_L`] ?? "";
-let gv = dbGoles[`elim_${faseIdx}_p${i}_V`] ?? "";
-let est = (esAdmin && equipoL && equipoV) ? "" : "disabled";
+    document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('btn-fase-' + faseIdx).classList.add('active');
 
-let claseL = "";
-let claseV = "";
+    let nombreLlaves = ["Clasificados", "Octavos de Final", "Cuartos de Final", "Semifinal", "Gran Final"];
+    let numMatches = [16, 8, 4, 2, 1][faseIdx];
 
-if (gl !== "" && gv !== "") {
+    const cont = document.getElementById('lista-partidos-eliminatorias');
+    cont.innerHTML = "";
 
-    if (Number(gl) > Number(gv)) {
-        claseL = "marcador-ganador";
-        claseV = "marcador-perdedor";
-    }
-    else if (Number(gl) < Number(gv)) {
-        claseL = "marcador-perdedor";
-        claseV = "marcador-ganador";
-    }
-    else {
-        claseL = "marcador-empate";
-        claseV = "marcador-empate";
-    }
+    for (let i = 0; i < numMatches; i++) {
+        const info = calendarioEliminatorias[faseIdx]?.[i] || {};
+        let override = dbLlavesManual[`${faseIdx}_${i}`];
 
-}
+        let equipoL = override
+            ? { nombre: override.local }
+            : obtenerGanadorBracket(faseIdx - 1, i * 2);
 
-let pL = dbGoles[`elim_${faseIdx}_p${i}_L_pen`] ?? "";
-let pV = dbGoles[`elim_${faseIdx}_p${i}_V_pen`] ?? "";
+        let equipoV = override
+            ? { nombre: override.visita }
+            : obtenerGanadorBracket(faseIdx - 1, i * 2 + 1);
 
-let clasePenL = "";
-let clasePenV = "";
+        let gl = dbGoles[`elim_${faseIdx}_p${i}_L`] ?? "";
+        let gv = dbGoles[`elim_${faseIdx}_p${i}_V`] ?? "";
+        let est = (esAdmin && equipoL && equipoV) ? "" : "disabled";
 
-if (pL !== "" && pV !== "") {
+        let claseL = "";
+        let claseV = "";
 
-    if (Number(pL) > Number(pV)) {
-        clasePenL = "marcador-ganador";
-        clasePenV = "marcador-perdedor";
-    }
-    else if (Number(pL) < Number(pV)) {
-        clasePenL = "marcador-perdedor";
-        clasePenV = "marcador-ganador";
-    }
-    else {
-        clasePenL = "marcador-empate";
-        clasePenV = "marcador-empate";
-    }
-
-}
-
-let penalesHTML = (gl !== "" && gv !== "" && Number(gl) === Number(gv)) ? `
-    <div class="penales-box">
-        <span>Penales:</span>
-
-        <input class="${clasePenL}" type="number" value="${pL}" ${est}
-               oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'L', this.value, true)">
-
-        <span>-</span>
-
-        <input class="${clasePenV}" type="number" value="${pV}" ${est}
-               oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value, true)">
-    </div>` : "";                
-                let botonesAdmin = esAdmin ? `
-<div style="margin-top:8px;text-align:center;">
-    <button onclick="editarLlave(${faseIdx},${i})">
-        ✏️ Corregir
-    </button>
-
-    <button onclick="eliminarLlaveManual(${faseIdx},${i})">
-        🗑️ Quitar
-    </button>
-</div>
-` : "";
-                
-                cont.innerHTML += `
-    <div class="partido-row" style="${(equipoL && equipoV) ? "" : "opacity: 0.5;"}">
-
-<div class="partido-meta">
-    <div>⏰ ${info.hora || ''}</div>
-    <div>📅 ${info.fecha || ''}</div>
-    <div>🏟️ ${info.estadio || 'Por definir'}</div>
-${obtenerEstadoPartido(info.fecha, info.hora, gl, gv)}
-    <div>🔥 Llave ${i + 1} • ${nombreLlaves[faseIdx]}</div>
-${override ? '<div style="color:#f59e0b;font-weight:bold;">🔧 Ajustada por Administrador</div>' : ''}
-</div>
-        <div class="partido-equipos">
-           <div class="equipo-nombre local">
-    <div class="nombre-jugador" style="color: #22c55e;">${obtenerDueñoObj(equipoL?.nombre) ?? "SIN ASIGNAR"}</div>
-    <div class="nombre-pais" style="color: #64748b;">${equipoL ? obtenerBandera(equipoL.nombre) : ""} ${equipoL?.nombre ?? "???"}</div>
-</div>        
-
-<div class="marcador-container">
-    <div class="marcador">
-        <input class="${claseL}" type="number" value="${gl}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'L', this.value)">
-<span style="color:#64748b; font-size:12px;">VS</span>
-<input class="${claseV}" type="number" value="${gv}" ${est} oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value)">
-    </div>
-    ${penalesHTML}
-</div>         
-            <div class="equipo-nombre visita">
-    <div class="nombre-jugador" style="color: #22c55e;">${obtenerDueñoObj(equipoV?.nombre) ?? "SIN ASIGNAR"}</div>
-    <div class="nombre-pais" style="color: #64748b;">${equipoV?.nombre ?? "???"} ${equipoV ? obtenerBandera(equipoV.nombre) : ""}</div>
-</div>
-
-        </div>
-${botonesAdmin}
-    </div>`;
-            }
-            if (faseIdx === 4) {
-                let campeon = obtenerGanadorBracket(4, 0); 
-                if (campeon) cont.innerHTML += `<div class="campeon-box">🏆 ¡TENEMOS CAMPEÓN! 🏆<div class="campeon-dueño">${obtenerDueñoObj(campeon.nombre)} - ${obtenerBandera(campeon.nombre)} ${campeon.nombre}</div></div>`;
+        if (gl !== "" && gv !== "") {
+            if (Number(gl) > Number(gv)) {
+                claseL = "marcador-ganador";
+                claseV = "marcador-perdedor";
+            } else if (Number(gl) < Number(gv)) {
+                claseL = "marcador-perdedor";
+                claseV = "marcador-ganador";
+            } else {
+                claseL = "marcador-empate";
+                claseV = "marcador-empate";
             }
         }
-        
-        function setEquipoManual(fase, matchIdx, lado, nombreEquipo) {
-    let keyManual = `manual_${fase}_${matchIdx}_${lado}`;
-    localStorage.setItem(keyManual, nombreEquipo);
-    verFaseEliminatoria(fase); // Recarga para mostrar el cambio
+
+        let pL = dbGoles[`elim_${faseIdx}_p${i}_L_pen`] ?? "";
+        let pV = dbGoles[`elim_${faseIdx}_p${i}_V_pen`] ?? "";
+
+        let clasePenL = "";
+        let clasePenV = "";
+
+        if (pL !== "" && pV !== "") {
+            if (Number(pL) > Number(pV)) {
+                clasePenL = "marcador-ganador";
+                clasePenV = "marcador-perdedor";
+            } else if (Number(pL) < Number(pV)) {
+                clasePenL = "marcador-perdedor";
+                clasePenV = "marcador-ganador";
+            } else {
+                clasePenL = "marcador-empate";
+                clasePenV = "marcador-empate";
+            }
+        }
+
+        let penalesHTML = (gl !== "" && gv !== "" && Number(gl) === Number(gv)) ? `
+            <div class="penales-box">
+                <span>Penales:</span>
+
+                <input class="${clasePenL}" type="number" value="${pL}" ${est}
+                       oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'L', this.value, true)">
+
+                <span>-</span>
+
+                <input class="${clasePenV}" type="number" value="${pV}" ${est}
+                       oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value, true)">
+            </div>` : "";
+
+        let botonesAdmin = esAdmin ? `
+            <div style="margin-top:8px;text-align:center;">
+                <button onclick="editarLlave(${faseIdx},${i})">✏️ Corregir</button>
+                <button onclick="eliminarLlaveManual(${faseIdx},${i})">🗑️ Quitar</button>
+            </div>
+        ` : "";
+
+        cont.innerHTML += `
+            <div class="partido-row" style="${(equipoL && equipoV) ? "" : "opacity: 0.5;"}">
+
+                <div class="partido-meta">
+                    <div>⏰ ${info.hora || ''}</div>
+                    <div>📅 ${info.fecha || ''}</div>
+                    <div>🏟️ ${info.estadio || 'Por definir'}</div>
+                    ${obtenerEstadoPartido(info.fecha, info.hora, gl, gv)}
+                    <div>🔥 Llave ${i + 1} • ${nombreLlaves[faseIdx]}</div>
+                    ${override ? '<div style="color:#f59e0b;font-weight:bold;">🔧 Ajustada por Administrador</div>' : ''}
+                </div>
+
+                <div class="partido-equipos">
+                    <div class="equipo-nombre local">
+                        <div class="nombre-jugador" style="color:#22c55e;">
+                            ${obtenerDueñoObj(equipoL?.nombre) ?? "SIN ASIGNAR"}
+                        </div>
+                        <div class="nombre-pais" style="color:#64748b;">
+                            ${equipoL ? obtenerBandera(equipoL.nombre) : ""} ${equipoL?.nombre ?? "???"}
+                        </div>
+                    </div>
+
+                    <div class="marcador-container">
+                        <div class="marcador">
+                            <input class="${claseL}" type="number" value="${gl}" ${est}
+                                   oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'L', this.value)">
+
+                            <span style="color:#64748b; font-size:12px;">VS</span>
+
+                            <input class="${claseV}" type="number" value="${gv}" ${est}
+                                   oninput="guardarGolEliminatoria(${faseIdx}, ${i}, 'V', this.value)">
+                        </div>
+
+                        ${penalesHTML}
+                    </div>
+
+                    <div class="equipo-nombre visita">
+                        <div class="nombre-jugador" style="color:#22c55e;">
+                            ${obtenerDueñoObj(equipoV?.nombre) ?? "SIN ASIGNAR"}
+                        </div>
+                        <div class="nombre-pais" style="color:#64748b;">
+                            ${equipoV?.nombre ?? "???"} ${equipoV ? obtenerBandera(equipoV.nombre) : ""}
+                        </div>
+                    </div>
+                </div>
+
+                ${botonesAdmin}
+            </div>
+        `;
+    }
+
+    if (faseIdx === 4) {
+        let campeon = obtenerGanadorBracket(4, 0);
+
+        if (campeon) {
+            cont.innerHTML += `
+                <div class="campeon-box">
+                    🏆 ¡TENEMOS CAMPEÓN! 🏆
+                    <div class="campeon-dueño">
+                        ${obtenerDueñoObj(campeon.nombre)} - ${obtenerBandera(campeon.nombre)} ${campeon.nombre}
+                    </div>
+                </div>
+            `;
+        }
+    }
 }
         
         function guardarLlaveManual(fase, partido, local, visita) {
