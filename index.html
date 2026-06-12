@@ -73,17 +73,42 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         .back-btn { background: #475569; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px; font-weight: bold; margin-bottom: 15px; }
         .grupo-titulo { color: var(--accent); font-size: 20px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; border-bottom: 2px solid var(--border); padding-bottom: 5px; text-align: center; }
 
-        .partido-row { background: #111827; padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid var(--border); position: relative; overflow: hidden; }
-        .partido-meta { text-align: center; font-size: 13px; color: #64748b; margin-bottom: 9px; text-transform: uppercase; font-weight: bold; }
+
+.partido-row {
+    background: #111827;
+    padding: 18px 8px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: visible;
+}
+
+
+        
+            .partido-meta { text-align: center; font-size: 13px; color: #64748b; margin-bottom: 9px; text-transform: uppercase; font-weight: bold; }
         .partido-equipos { display: flex; align-items: center; justify-content: space-between; }
         
         .equipo-nombre { flex: 1; display: flex; flex-direction: column; justify-content: center; }
         .equipo-nombre.local { text-align: right; align-items: flex-end; }
         .equipo-nombre.visita { text-align: left; align-items: flex-start; }
         
-        .nombre-jugador { font-size: 16px; font-weight: bold; color: var(--secondary); margin-bottom: 3px; }
-        .nombre-pais { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
 
+
+
+
+        .nombre-jugador { font-size: 16px; font-weight: bold; color: var(--secondary); margin-bottom: 3px; }
+   
+.nombre-jugador {
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--secondary);
+    margin-bottom: 3px;
+    line-height: 1.15;
+    word-break: normal;
+}
+
+     
         .marcador-container { display: flex; flex-direction: column; align-items: center; gap: 5px; margin: 0 10px; }
         .marcador { display: flex; align-items: center; gap: 8px; }
        .marcador input {
