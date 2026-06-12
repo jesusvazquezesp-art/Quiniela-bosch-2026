@@ -1872,31 +1872,24 @@ function actualizarRelojGlobal() {
 
             if (!partido.fecha || !partido.hora) return;
 
-            const fechaObj =
-                convertirFechaPartido(
-                    partido.fecha,
-                    partido.hora
-                );
+            const fechaObj = convertirFechaPartido(
+                partido.fecha,
+                partido.hora
+            );
 
             if (fechaObj > ahora) {
-
                 lista.push({
                     grupo,
                     ...partido,
                     fechaObj
                 });
-
             }
-
         });
     }
 
-    lista.sort(
-        (a,b) =>
-        a.fechaObj - b.fechaObj
-    );
+    lista.sort((a, b) => a.fechaObj - b.fechaObj);
 
-    lista = lista.slice(0,3);
+    lista = lista.slice(0, 3);
 
     let html = `
     <div class="proximos-box">
@@ -1907,29 +1900,20 @@ function actualizarRelojGlobal() {
 
     lista.forEach(p => {
 
-        const diff =
-            p.fechaObj - ahora;
+        const diff = p.fechaObj - ahora;
 
-        const dias =
-            Math.floor(diff / 86400000);
+        const dias = Math.floor(diff / 86400000);
+        const horas = Math.floor((diff % 86400000) / 3600000);
+        const minutos = Math.floor((diff % 3600000) / 60000);
+        const segundos = Math.floor((diff % 60000) / 1000);
 
-        const horas =
-            Math.floor(
-                (diff % 86400000) /
-                3600000
-            );
+        let tiempo = [];
 
-        const minutos =
-            Math.floor(
-                (diff % 3600000) /
-                60000
-            );
+        if (dias > 0) tiempo.push(`${dias}d`);
+        if (horas > 0 || dias > 0) tiempo.push(`${horas}h`);
+        if (minutos > 0 || horas > 0 || dias > 0) tiempo.push(`${minutos}m`);
 
-        const segundos =
-            Math.floor(
-                (diff % 60000) /
-                1000
-            );
+        tiempo.push(`${segundos}s`);
 
         html += `
         <div class="proximo-item">
@@ -1943,7 +1927,7 @@ function actualizarRelojGlobal() {
             </div>
 
             <div class="proximo-tiempo">
-                ⏳ ${dias}d ${horas}h ${minutos}m ${segundos}s
+                ⏳ ${tiempo.join(" ")}
             </div>
 
         </div>
@@ -1952,10 +1936,7 @@ function actualizarRelojGlobal() {
 
     html += `</div>`;
 
-    const box =
-        document.getElementById(
-            "proximos-partidos-box"
-        );
+    const box = document.getElementById("proximos-partidos-box");
 
     if (box) {
         box.innerHTML = html;
