@@ -1793,19 +1793,27 @@ function obtenerEstadoPartido(fechaStr, horaStr, gl = null, gv = null) {
     const diferencia = inicio - ahora;
 
     // Antes de iniciar
-    if (diferencia > 0) {
+if (diferencia > 0) {
 
-        const dias = Math.floor(diferencia / 86400000);
-        const horas = Math.floor((diferencia % 86400000) / 3600000);
-        const minutos = Math.floor((diferencia % 3600000) / 60000);
-        const segundos = Math.floor((diferencia % 60000) / 1000);
+    const dias = Math.floor(diferencia / 86400000);
+    const horas = Math.floor((diferencia % 86400000) / 3600000);
+    const minutos = Math.floor((diferencia % 3600000) / 60000);
+    const segundos = Math.floor((diferencia % 60000) / 1000);
 
-        return `
-        <div class="estado-partido estado-previo">
-            ⏳ Inicia en:<br>
-            ${dias}d ${horas}h ${minutos}m ${segundos}s
-        </div>`;
-    }
+    let tiempo = [];
+
+    if (dias > 0) tiempo.push(`${dias}d`);
+    if (horas > 0 || dias > 0) tiempo.push(`${horas}h`);
+    if (minutos > 0 || horas > 0 || dias > 0) tiempo.push(`${minutos}m`);
+
+    tiempo.push(`${segundos}s`);
+
+    return `
+    <div class="estado-partido estado-previo">
+        ⏳ Inicia en:<br>
+        ${tiempo.join(" ")}
+    </div>`;
+}
 
     // Durante el partido
     if (ahora >= inicio && ahora <= fin) {
