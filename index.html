@@ -464,14 +464,7 @@ async function descargarDesdeNube() {
       "visita": "Czechia"
     },
     
-    {
-      "fecha": "18-Jun-26",
-      "hora": "19:00",
-        "estadio": "Estadio Akron, Zapopan",
-      "local": "Mexico",
-      "visita": "South Korea"
-    },
-
+    
       {
       "fecha": "18-Jun-26",
       "hora": "10:00",
@@ -479,6 +472,15 @@ async function descargarDesdeNube() {
       "local": "Czechia",
       "visita": "South Africa"
     },
+      
+      {
+      "fecha": "18-Jun-26",
+      "hora": "19:00",
+        "estadio": "Estadio Akron, Zapopan",
+      "local": "Mexico",
+      "visita": "South Korea"
+    },
+
       
     {
       "fecha": "24-Jun-26",
@@ -1300,8 +1302,15 @@ let esAdmin = false;
         }
 
         function obtenerPartidosDeGrupo(teams) {
-            return [ {l:teams[0], v:teams[1]}, {l:teams[2], v:teams[3]}, {l:teams[0], v:teams[2]}, {l:teams[1], v:teams[3]}, {l:teams[0], v:teams[3]}, {l:teams[1], v:teams[2]} ];
-        }
+    return [ 
+        {l:teams[0], v:teams[1]}, 
+        {l:teams[2], v:teams[3]}, 
+        {l:teams[1], v:teams[3]}, 
+        {l:teams[0], v:teams[2]}, 
+        {l:teams[3], v:teams[0]}, 
+        {l:teams[1], v:teams[2]} 
+    ];
+}
 
         function obtenerDueñoObj(equipo) {
             let p = dbParticipantes.find(x => x.equipo === equipo);
