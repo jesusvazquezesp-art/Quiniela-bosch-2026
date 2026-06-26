@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="es">
 <head>
     
@@ -336,7 +336,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div id="panel-grupos" class="panel active">
             <div id="proximos-partidos-box"></div>
             <div id="menu-grupos-grid" class="grupos-grid"></div>
-            <div id="vista-grupo-detalle" style="display; none">
+            <div id="vista-grupo-detalle" style="display; none;">
                 <button class="back-btn" onclick="regresarAlMenuGrupos()">← Volver al Menú</button>
                 <div id="dinamico-grupo-titulo" class="grupo-titulo">Grupo A</div>
                 <div id="dinamico-lista-partidos"></div>
@@ -422,7 +422,7 @@ async function descargarDesdeNube() {
       const response = await fetch(
     `https://api.jsonbin.io/v3/b/${BIN_ID}?t=${Date.now()}`,
     {
-        method: "GET",
+       method: "GET",
         cache: "no-store",
         headers: {
             "X-Master-Key": MASTER_KEY
