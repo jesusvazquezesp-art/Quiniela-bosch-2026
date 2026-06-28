@@ -13,6 +13,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>🏆 Quiniela Bosch 2026 - Master Control</title>
+<!-- Corrección llaves manuales v2: manuales mandan en pantalla, WhatsApp y siguientes rondas -->
 
 <meta name="description" content="🏆 Quiniela Bosch 2026 - Plataforma oficial del torneo">
 
@@ -432,13 +433,26 @@ async function descargarDesdeNube() {
         const datos = await response.json();
 
         if (datos.record) {
+            // Guardamos primero lo que exista en este celular/computadora.
+            // Esto evita perder una corrección manual que todavía no se había subido a JSONBin.
+            const llavesLocales = JSON.parse(localStorage.getItem('bosch_llaves_manual')) || {};
+
             dbParticipantes = datos.record.participantes || [];
             dbGoles = datos.record.goles || {};
-            dbLlavesManual = datos.record.llavesManual || {};
+
+            // IMPORTANTE: las llaves manuales locales tienen prioridad sobre la nube.
+            // Así, si corregiste Canadá en este equipo, no vuelve a aparecer Corea del Sur.
+            dbLlavesManual = {
+                ...(datos.record.llavesManual || {}),
+                ...llavesLocales
+            };
             
             localStorage.setItem('bosch_participantes', JSON.stringify(dbParticipantes));
             localStorage.setItem('bosch_goles', JSON.stringify(dbGoles));
             localStorage.setItem('bosch_llaves_manual', JSON.stringify(dbLlavesManual));
+
+            // Re-subimos la mezcla para que otros celulares también reciban las llaves corregidas.
+            sincronizarConNube();
         }
 
     } catch (error) {
@@ -1324,10 +1338,29 @@ let esAdmin = false;
         visita: visita
     };
 
+    limpiarRondasPosteriores(fase, partido);
+
     localStorage.setItem(
         'bosch_llaves_manual',
         JSON.stringify(dbLlavesManual)
     );
+
+    // Si esta llave ya tiene marcador, dejamos listo el botón WhatsApp
+    // con la llave corregida, sin nombres viejos guardados en memoria.
+    const gl = dbGoles[`elim_${fase}_p${partido}_L`];
+    const gv = dbGoles[`elim_${fase}_p${partido}_V`];
+    if (gl !== undefined && gv !== undefined) {
+        ultimoMarcadorActualizado = {
+            tipo: "Eliminatoria",
+            fase: fase,
+            matchIdx: partido,
+            llave: partido + 1,
+            golesLocal: gl,
+            golesVisita: gv
+        };
+    }
+
+    sincronizarConNube();
 
     alert("Llave corregida");
 }
@@ -1500,24 +1533,71 @@ if (gl !== "" && gv !== "") {
 
         const semillas32 = [1,32, 16,17, 9,24, 8,25, 4,29, 13,20, 12,21, 5,28, 2,31, 15,18, 10,23, 7,26, 3,30, 14,19, 11,22, 6,27];
 
+
+
+function limpiarRondasPosteriores(fase, partido) {
+    // Cuando se corrige una llave o cambia un marcador,
+    // se borran los cruces/resultados viejos que dependían de ese partido.
+    let siguientePartido = Math.floor(partido / 2);
+
+    for (let f = fase + 1; f <= 4; f++) {
+        delete dbLlavesManual[`${f}_${siguientePartido}`];
+
+        delete dbGoles[`elim_${f}_p${siguientePartido}_L`];
+        delete dbGoles[`elim_${f}_p${siguientePartido}_V`];
+        delete dbGoles[`elim_${f}_p${siguientePartido}_L_pen`];
+        delete dbGoles[`elim_${f}_p${siguientePartido}_V_pen`];
+
+        siguientePartido = Math.floor(siguientePartido / 2);
+    }
+
+    localStorage.setItem('bosch_llaves_manual', JSON.stringify(dbLlavesManual));
+    localStorage.setItem('bosch_goles', JSON.stringify(dbGoles));
+}
+
+        function obtenerEquiposLlave(faseIdx, matchIdx) {
+            const override = dbLlavesManual[`${faseIdx}_${matchIdx}`];
+
+            if (override) {
+                return {
+                    local: { nombre: override.local },
+                    visita: { nombre: override.visita }
+                };
+            }
+
+            return {
+                local: obtenerGanadorBracket(faseIdx - 1, matchIdx * 2),
+                visita: obtenerGanadorBracket(faseIdx - 1, matchIdx * 2 + 1)
+            };
+        }
+
         function obtenerGanadorBracket(faseIdx, matchIdx) {
             if (faseIdx === -1) {
                 let clasificados = obtener32Clasificados();
-                return clasificados[semillas32[matchIdx] - 1]; 
+                return clasificados[semillas32[matchIdx] - 1];
             }
+
+            const equipos = obtenerEquiposLlave(faseIdx, matchIdx);
+            const equipoL = equipos.local;
+            const equipoV = equipos.visita;
+
             let gL = dbGoles[`elim_${faseIdx}_p${matchIdx}_L`];
             let gV = dbGoles[`elim_${faseIdx}_p${matchIdx}_V`];
-            if (gL !== undefined && gV !== undefined) {
-                if (gL > gV) return obtenerGanadorBracket(faseIdx - 1, matchIdx * 2);
-                if (gV > gL) return obtenerGanadorBracket(faseIdx - 1, matchIdx * 2 + 1);
-                if (gL === gV) {
-                    let pL = dbGoles[`elim_${faseIdx}_p${matchIdx}_L_pen`];
-                    let pV = dbGoles[`elim_${faseIdx}_p${matchIdx}_V_pen`];
-                    if (pL > pV) return obtenerGanadorBracket(faseIdx - 1, matchIdx * 2);
-                    if (pV > pL) return obtenerGanadorBracket(faseIdx - 1, matchIdx * 2 + 1);
+
+            if (equipoL && equipoV && gL !== undefined && gV !== undefined) {
+                if (gL > gV) return equipoL;
+                if (gV > gL) return equipoV;
+
+                let pL = dbGoles[`elim_${faseIdx}_p${matchIdx}_L_pen`];
+                let pV = dbGoles[`elim_${faseIdx}_p${matchIdx}_V_pen`];
+
+                if (pL !== undefined && pV !== undefined) {
+                    if (pL > pV) return equipoL;
+                    if (pV > pL) return equipoV;
                 }
             }
-            return null; 
+
+            return null;
         }
 
         function guardarGolEliminatoria(fase, matchIdx, lado, val, isPenal = false) {
@@ -1530,23 +1610,27 @@ if (gl !== "" && gv !== "") {
         dbGoles[key] = parseInt(val);
     }
 
-    let equipoL = obtenerGanadorBracket(fase - 1, matchIdx * 2);
-    let equipoV = obtenerGanadorBracket(fase - 1, matchIdx * 2 + 1);
+    const equiposLlave = obtenerEquiposLlave(fase, matchIdx);
+    let equipoL = equiposLlave.local;
+    let equipoV = equiposLlave.visita;
 
     let gl = dbGoles[`elim_${fase}_p${matchIdx}_L`];
     let gv = dbGoles[`elim_${fase}_p${matchIdx}_V`];
 
     if (equipoL && equipoV && gl !== undefined && gv !== undefined) {
+        // Guardamos la referencia del partido, NO los nombres fijos.
+        // Así WhatsApp siempre recalcula con la llave manual actualizada.
         ultimoMarcadorActualizado = {
             tipo: "Eliminatoria",
             fase: fase,
+            matchIdx: matchIdx,
             llave: matchIdx + 1,
-            local: equipoL.nombre,
-            visita: equipoV.nombre,
             golesLocal: gl,
             golesVisita: gv
         };
     }
+
+    limpiarRondasPosteriores(fase, matchIdx);
 
     localStorage.setItem('bosch_goles', JSON.stringify(dbGoles));
     sincronizarConNube();
@@ -1570,14 +1654,9 @@ if (gl !== "" && gv !== "") {
     for (let i = 0; i < numMatches; i++) {
         const info = calendarioEliminatorias[faseIdx]?.[i] || {};
         let override = dbLlavesManual[`${faseIdx}_${i}`];
-
-        let equipoL = override
-            ? { nombre: override.local }
-            : obtenerGanadorBracket(faseIdx - 1, i * 2);
-
-        let equipoV = override
-            ? { nombre: override.visita }
-            : obtenerGanadorBracket(faseIdx - 1, i * 2 + 1);
+        let equiposLlave = obtenerEquiposLlave(faseIdx, i);
+        let equipoL = equiposLlave.local;
+        let equipoV = equiposLlave.visita;
 
         let gl = dbGoles[`elim_${faseIdx}_p${i}_L`] ?? "";
         let gv = dbGoles[`elim_${faseIdx}_p${i}_V`] ?? "";
@@ -1712,10 +1791,27 @@ if (gl !== "" && gv !== "") {
         visita: visita
     };
 
+    limpiarRondasPosteriores(fase, partido);
+
     localStorage.setItem(
         'bosch_llaves_manual',
         JSON.stringify(dbLlavesManual)
     );
+
+    // Si esta llave ya tiene marcador, dejamos listo el botón WhatsApp
+    // con la llave corregida, sin nombres viejos guardados en memoria.
+    const gl = dbGoles[`elim_${fase}_p${partido}_L`];
+    const gv = dbGoles[`elim_${fase}_p${partido}_V`];
+    if (gl !== undefined && gv !== undefined) {
+        ultimoMarcadorActualizado = {
+            tipo: "Eliminatoria",
+            fase: fase,
+            matchIdx: partido,
+            llave: partido + 1,
+            golesLocal: gl,
+            golesVisita: gv
+        };
+    }
 
     sincronizarConNube();
 
@@ -1757,6 +1853,7 @@ function eliminarLlaveManual(fase, partido) {
     }
 
     delete dbLlavesManual[`${fase}_${partido}`];
+    limpiarRondasPosteriores(fase, partido);
 
     localStorage.setItem(
         'bosch_llaves_manual',
@@ -1992,15 +2089,42 @@ function actualizarRelojGlobal() {
     }
 
     const m = ultimoMarcadorActualizado;
+    let local = m.local;
+    let visita = m.visita;
+    let golesLocal = m.golesLocal;
+    let golesVisita = m.golesVisita;
+    let detalle = "";
+
+    if (m.tipo === "Eliminatoria") {
+        // Compatibilidad: versiones anteriores guardaban "llave" pero no "matchIdx".
+        // Aquí convertimos Llave 1 -> matchIdx 0, Llave 2 -> matchIdx 1, etc.
+        const fase = Number(m.fase ?? faseEliminatoriaGlobal ?? 0);
+        const matchIdx = Number.isInteger(m.matchIdx)
+            ? m.matchIdx
+            : Math.max(0, Number(m.llave || 1) - 1);
+
+        // Recalcular en el momento de compartir para respetar correcciones manuales.
+        const equiposLlave = obtenerEquiposLlave(fase, matchIdx);
+        local = equiposLlave.local?.nombre || local || "Sin definir";
+        visita = equiposLlave.visita?.nombre || visita || "Sin definir";
+
+        golesLocal = dbGoles[`elim_${fase}_p${matchIdx}_L`] ?? golesLocal;
+        golesVisita = dbGoles[`elim_${fase}_p${matchIdx}_V`] ?? golesVisita;
+
+        const nombresFase = ["16vos", "8vos", "Cuartos", "Semis", "Final"];
+        detalle = `${nombresFase[fase] || "Eliminatoria"} - Llave ${matchIdx + 1}`;
+    } else {
+        detalle = m.grupo;
+    }
 
     const mensaje =
 `🏆 Quiniela Bosch 2026
 
 ⚽ Resultado actualizado
 
-${m.local} ${m.golesLocal} - ${m.golesVisita} ${m.visita}
+${local} ${golesLocal} - ${golesVisita} ${visita}
 
-📋 ${m.tipo === "Grupo" ? m.grupo : "Eliminatoria - Llave " + m.llave}
+📋 ${detalle}
 
 Consulta la quiniela:
 https://jesusvazquezesp-art.github.io/Quiniela-bosch-2026/`;
