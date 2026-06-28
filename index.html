@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     
@@ -302,7 +302,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 
          <h1 style="font-size: 22px; text-align: center;">
-    🏆 QUINIELA <span class="text-rojo" onclick="toggleAdminMode()" style="cursor:pointer;">BOSCH</span> 2026</h1> 
+    🏆 QUINIELA <span class="text-rojo" onclick="toggleAdminMode()" style="cursor:pointer;">BOSCH</span> 2026
 
         <h1 style="font-size: 18px; text-align: center;">
     🦾 🦾</h1> 
@@ -312,8 +312,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
         <div class="tabs">
             <button id="btn-tab-registro" class="tab-btn">✍️ REGISTRO</button>
-            <button id="btn-tab-grupos" class="tab-btn active">📋 FASE GRUPOS</button>
-            <button id="btn-tab-eliminatorias" class="tab-btn">🔥 ELIMINATORIAS</button>
+            <button id="btn-tab-grupos" class="tab-btn">📋 FASE GRUPOS</button>
+            <button id="btn-tab-eliminatorias" class="tab-btn active">🔥 ELIMINATORIAS</button>
         </div>
 
         <div id="panel-registro" class="panel">
@@ -333,7 +333,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </div>
         </div>
 
-        <div id="panel-grupos" class="panel active">
+        <div id="panel-grupos" class="panel">
             <div id="proximos-partidos-box"></div>
             <div id="menu-grupos-grid" class="grupos-grid"></div>
             <div id="vista-grupo-detalle" style="display: none;">
@@ -356,7 +356,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </div>
         </div>
 
-        <div id="panel-eliminatorias" class="panel">
+        <div id="panel-eliminatorias" class="panel active">
             <div class="sub-tabs">
                 <button id="btn-fase-0" class="sub-tab-btn active" onclick="verFaseEliminatoria(0)">16VOS</button>
                 <button id="btn-fase-1" class="sub-tab-btn" onclick="verFaseEliminatoria(1)">8VOS</button>
@@ -422,7 +422,7 @@ async function descargarDesdeNube() {
       const response = await fetch(
     `https://api.jsonbin.io/v3/b/${BIN_ID}?t=${Date.now()}`,
     {
-       method: "GET",
+        method: "GET",
         cache: "no-store",
         headers: {
             "X-Master-Key": MASTER_KEY
@@ -542,10 +542,10 @@ async function descargarDesdeNube() {
     },
     {
       "fecha": "28-Jun-26",
-      "hora": "12:00",
-        "estadio": "Por Asignar",
-      "local": "Group A Runners Up",
-      "visita": "Group"
+      "hora": "13:00",
+        "estadio": "Inglewood",
+      "local": "South Africa",
+      "visita": "Canada"
     }
   ],
   "Grupo D": [
@@ -564,11 +564,13 @@ async function descargarDesdeNube() {
       "visita": "Türkiye"
     },
    
-   
-      
-
-      
-
+    {
+      "fecha": "19-Jun-26",
+      "hora": "13:00",
+        "estadio": "Lumen Field, Seattle",
+      "local": "USA",
+      "visita": "Australia"
+    },
        {
       "fecha": "19-Jun-26",
       "hora": "21:00",
@@ -576,16 +578,6 @@ async function descargarDesdeNube() {
       "local": "Türkiye",
       "visita": "Paraguay"
     },
-
-       {
-      "fecha": "19-Jun-26",
-      "hora": "13:00",
-        "estadio": "Lumen Field, Seattle",
-      "local": "USA",
-      "visita": "Australia"
-    },
-
-      
     {
       "fecha": "25-Jun-26",
       "hora": "20:00",
@@ -622,8 +614,8 @@ async function descargarDesdeNube() {
       "fecha": "19-Jun-26",
       "hora": "16:00",
         "estadio": "Gillette Stadium, Foxboroug",
-      "local": "Morocco",
-      "visita": "Scotland"
+      "local": "Scotland",
+      "visita": "Morocco"
     },
        {
       "fecha": "19-Jun-26",
@@ -643,15 +635,15 @@ async function descargarDesdeNube() {
       "fecha": "24-Jun-26",
       "hora": "16:00",
         "estadio": "Mercedes-Benz Stadium, Atlanta",
-      "local": "Morocco",
+      "local": "Brazizlz",
       "visita": "Haiti"
     },
     {
       "fecha": "29-Jun-26",
-      "hora": "19:00",
-        "estadio": "Por asignar",
-      "local": "Group F Winners",
-      "visita": "Group"
+      "hora": "11:00",
+        "estadio": "Foxborough",
+      "local": "Brazil",
+      "visita": "Japan"
     }
   ],
   "Grupo E": [
@@ -670,9 +662,13 @@ async function descargarDesdeNube() {
       "local": "Ivory Coast",
       "visita": "Ecuador"
     },
-
-      
-   
+    {
+      "fecha": "20-Jun-26",
+      "hora": "14:00",
+        "estadio": "BMO Field, Toronto",
+      "local": "Germany",
+      "visita": "Ivory Coast"
+    },
     {
       "fecha": "20-Jun-26",
       "hora": "16:00",
@@ -680,16 +676,6 @@ async function descargarDesdeNube() {
       "local": "Ecuador",
       "visita": "Curaçao"
     },
-
-       {
-      "fecha": "20-Jun-26",
-      "hora": "14:00",
-        "estadio": "BMO Field, Toronto",
-      "local": "Germany",
-      "visita": "Ivory Coast"
-    },
-
-      
     {
       "fecha": "25-Jun-26",
       "hora": "14:00",
@@ -720,7 +706,13 @@ async function descargarDesdeNube() {
       "local": "Sweden",
       "visita": "Tunisia"
     },
-   
+    {
+      "fecha": "20-Jun-26",
+      "hora": "11:00",
+        "estadio": "NRG Stadium, Houston",
+      "local": "Netherlands",
+      "visita": "Sweden"
+    },
     {
       "fecha": "20-Jun-26",
       "hora": "22:00",
@@ -728,16 +720,6 @@ async function descargarDesdeNube() {
       "local": "Tunisia",
       "visita": "Japan"
     },
-
-       {
-      "fecha": "20-Jun-26",
-      "hora": "11:00",
-        "estadio": "NRG Stadium, Houston",
-      "local": "Netherlands",
-      "visita": "Sweden"
-    },
-
-      
     {
       "fecha": "25-Jun-26",
       "hora": "17:00",
@@ -754,10 +736,10 @@ async function descargarDesdeNube() {
     },
     {
       "fecha": "29-Jun-26",
-      "hora": "12:00",
-        "estadio": "Por asignar",
-      "local": "Group C Winners",
-      "visita": "Group"
+      "hora": "14:30",
+        "estadio": "Guadalupe",
+      "local": "Germany",
+      "visita": "Paraguay"
     }
   ],
   "Grupo H": [
@@ -777,7 +759,13 @@ async function descargarDesdeNube() {
       "visita": "Uruguay"
     },
     
-    
+    {
+      "fecha": "21-Jun-26",
+      "hora": "10:00",
+        "estadio": "Mercedes-Benz Stadium, Atlanta",
+      "local": "Spain",
+      "visita": "Saudi Arabia"
+    },
       {
       "fecha": "21-Jun-26",
       "hora": "16:00",
@@ -785,16 +773,6 @@ async function descargarDesdeNube() {
       "local": "Uruguay",
       "visita": "Cape Verde"
     },
-
-      {
-      "fecha": "21-Jun-26",
-      "hora": "10:00",
-        "estadio": "Mercedes-Benz Stadium, Atlanta",
-      "local": "Spain",
-      "visita": "Saudi Arabia"
-    },
-
-      
     {
       "fecha": "26-Jun-26",
       "hora": "18:00",
@@ -810,11 +788,11 @@ async function descargarDesdeNube() {
       "visita": "Spain"
     },
     {
-      "fecha": "3-Jul-26",
-      "hora": "18:00",
-        "estadio": "Por asignar",
-      "local": "Group J Winners",
-      "visita": "Group"
+      "fecha": "29-Jun-26",
+      "hora": "19:00",
+        "estadio": "Houston",
+      "local": "Paises Bajos",
+      "visita": "Marruecos"
     }
   ],
   "Grupo G": [
@@ -833,7 +811,13 @@ async function descargarDesdeNube() {
       "visita": "New Zealand"
     },
     
-    
+    {
+      "fecha": "21-Jun-26",
+      "hora": "13:00",
+        "estadio": "SoFi Stadium, Inglewood",
+      "local": "Belgium",
+      "visita": "Iran"
+    },
     {
       "fecha": "21-Jun-26",
       "hora": "19:00",
@@ -841,17 +825,6 @@ async function descargarDesdeNube() {
       "local": "New Zealand",
       "visita": "Egypt"
     },
-
-      {
-      "fecha": "21-Jun-26",
-      "hora": "13:00",
-        "estadio": "SoFi Stadium, Inglewood",
-      "local": "Belgium",
-      "visita": "Iran"
-    },
-
-
-      
     {
       "fecha": "26-Jun-26",
       "hora": "21:00",
@@ -867,11 +840,11 @@ async function descargarDesdeNube() {
       "visita": "Belgium"
     },
     {
-      "fecha": "3-Jul-26",
-      "hora": "13:00",
-        "estadio": "Por asignar",
-      "local": "Group D Runners Up",
-      "visita": "Group"
+      "fecha": "30-Jun-26",
+      "hora": "11:00",
+        "estadio": "East",
+      "local": "Costa de Marfil",
+      "visita": "Noruega"
     }
   ],
   "Grupo I": [
@@ -890,7 +863,13 @@ async function descargarDesdeNube() {
       "visita": "Norway"
     },
     
-   
+    {
+      "fecha": "22-Jun-26",
+      "hora": "15:00",
+        "estadio": "Lincoln Financial Field, Philadelphia",
+      "local": "France",
+      "visita": "Iraq"
+    },
       {
       "fecha": "22-Jun-26",
       "hora": "18:00",
@@ -898,16 +877,6 @@ async function descargarDesdeNube() {
       "local": "Norway",
       "visita": "Senegal"
     },
-
-       {
-      "fecha": "22-Jun-26",
-      "hora": "15:00",
-        "estadio": "Lincoln Financial Field, Philadelphia",
-      "local": "France",
-      "visita": "Iraq"
-    },
-
-      
     {
       "fecha": "26-Jun-26",
       "hora": "13:00",
@@ -924,10 +893,10 @@ async function descargarDesdeNube() {
     },
     {
       "fecha": "30-Jun-26",
-      "hora": "12:00",
-        "estadio": "Por asignar",
-      "local": "Group E Runners Up",
-      "visita": "Group"
+      "hora": "15:00",
+        "estadio": "Arlington",
+      "local": "Francia",
+      "visita": "Suecia"
     }
   ],
   "Grupo J": [
@@ -945,7 +914,13 @@ async function descargarDesdeNube() {
       "local": "Austria",
       "visita": "Jordan"
     },
-    
+    {
+      "fecha": "22-Jun-26",
+      "hora": "11:00",
+        "estadio": "AT&T Stadium, Arlington",
+      "local": "Argentina",
+      "visita": "Austria"
+    },
     {
       "fecha": "22-Jun-26",
       "hora": "21:00",
@@ -953,16 +928,6 @@ async function descargarDesdeNube() {
       "local": "Jordan",
       "visita": "Algeria"
     },
-
-      {
-      "fecha": "22-Jun-26",
-      "hora": "11:00",
-        "estadio": "AT&T Stadium, Arlington",
-      "local": "Argentina",
-      "visita": "Austria"
-    },
-
-      
     {
       "fecha": "27-Jun-26",
       "hora": "20:00",
@@ -978,11 +943,11 @@ async function descargarDesdeNube() {
       "visita": "Argentina"
     },
     {
-      "fecha": "2-Jul-26",
-      "hora": "12:00",
-        "estadio": "Por asignar",
-      "local": "Group H Winners",
-      "visita": "Group"
+      "fecha": "30-Jun-26",
+      "hora": "19:00",
+        "estadio": "Ciudad de Mexico",
+      "local": "México",
+      "visita": "Ecuador"
     }
   ],
   "Grupo L": [
@@ -1001,7 +966,13 @@ async function descargarDesdeNube() {
       "local": "Ghana",
       "visita": "Panama"
     },
-    
+    {
+      "fecha": "23-Jun-26",
+      "hora": "14:00",
+        "estadio": "Gillette Stadium, Foxborough",
+      "local": "England",
+      "visita": "Ghana"
+    },
     {
       "fecha": "23-Jun-26",
       "hora": "17:00",
@@ -1009,16 +980,6 @@ async function descargarDesdeNube() {
       "local": "Panama",
       "visita": "Croatia"
     },
-
-      {
-      "fecha": "23-Jun-26",
-      "hora": "14:00",
-        "estadio": "Gillette Stadium, Foxborough",
-      "local": "England",
-      "visita": "Ghana"
-    },
-
-      
     {
       "fecha": "27-Jun-26",
       "hora": "15:00",
@@ -1034,11 +995,11 @@ async function descargarDesdeNube() {
       "visita": "Ghana"
     },
     {
-      "fecha": "2-Jul-26",
-      "hora": "19:00",
-        "estadio": "Por asignar",
-      "local": "Group K Runners Up",
-      "visita": "Group"
+      "fecha": "1-Jul-26",
+      "hora": "10:00",
+        "estadio": "Atlanta",
+      "local": "Inglaterra",
+      "visita": "Republica Democratica del Congo"
     }
   ],
   "Grupo K": [
@@ -1056,9 +1017,13 @@ async function descargarDesdeNube() {
       "local": "Uzbekistan",
       "visita": "Colombia"
     },
-
-
-      
+    {
+      "fecha": "23-Jun-26",
+      "hora": "11:00",
+      "estadio": "NRG Stadium, Houston",
+      "local": "Portugal",
+      "visita": "Uzbekistan"
+    },
     {
       "fecha": "23-Jun-26",
       "hora": "20:00",
@@ -1066,16 +1031,6 @@ async function descargarDesdeNube() {
       "local": "Colombia",
       "visita": "Congo DR"
     },
-
-       {
-      "fecha": "23-Jun-26",
-      "hora": "11:00",
-      "estadio": "NRG Stadium, Houston",
-      "local": "Portugal",
-      "visita": "Uzbekistan"
-    },
-
-      
     {
       "fecha": "27-Jun-26",
       "hora": "17:30",
@@ -1350,7 +1305,7 @@ let esAdmin = false;
     return [ 
         {l:teams[0], v:teams[1]}, 
         {l:teams[2], v:teams[3]}, 
-        {l:teams[3], v:teams[1]}, 
+        {l:teams[1], v:teams[3]}, 
         {l:teams[0], v:teams[2]}, 
         {l:teams[3], v:teams[0]}, 
         {l:teams[1], v:teams[2]} 
