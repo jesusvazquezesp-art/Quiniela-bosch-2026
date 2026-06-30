@@ -1317,6 +1317,27 @@ let esAdmin = false;
             return p ? p.nombre : "Sin Asignar";
         }
         
+
+function borrarDatosPosterioresDesde(fase, partido) {
+    // Al corregir una llave manual, se limpian resultados y correcciones dependientes
+    // para que no se queden equipos viejos en rondas posteriores ni al compartir.
+    for (let f = fase + 1; f <= 4; f++) {
+        const divisor = Math.pow(2, f - fase);
+        const inicio = Math.floor(partido / divisor);
+        const total = [16, 8, 4, 2, 1][f] || 0;
+
+        for (let i = 0; i < total; i++) {
+            if (i >= inicio) {
+                delete dbLlavesManual[`${f}_${i}`];
+                delete dbGoles[`elim_${f}_p${i}_L`];
+                delete dbGoles[`elim_${f}_p${i}_V`];
+                delete dbGoles[`elim_${f}_p${i}_L_pen`];
+                delete dbGoles[`elim_${f}_p${i}_V_pen`];
+            }
+        }
+    }
+}
+
         function guardarLlaveManual(fase, partido, local, visita) {
 
     dbLlavesManual[`${fase}_${partido}`] = {
@@ -1324,10 +1345,15 @@ let esAdmin = false;
         visita: visita
     };
 
+    borrarDatosPosterioresDesde(fase, partido);
+
     localStorage.setItem(
         'bosch_llaves_manual',
         JSON.stringify(dbLlavesManual)
     );
+    localStorage.setItem('bosch_goles', JSON.stringify(dbGoles));
+
+    sincronizarConNube();
 
     alert("Llave corregida");
 }
@@ -1500,19 +1526,23 @@ if (gl !== "" && gv !== "") {
 
         const semillas32 = [1,32, 16,17, 9,24, 8,25, 4,29, 13,20, 12,21, 5,28, 2,31, 15,18, 10,23, 7,26, 3,30, 14,19, 11,22, 6,27];
 
-        function obtenerEquipoLlave(faseIdx, matchIdx, lado) {
+
+        function obtenerEquiposEliminatoria(faseIdx, matchIdx) {
             const override = dbLlavesManual[`${faseIdx}_${matchIdx}`];
 
-            if (override) {
-                const nombre = lado === 'L' ? override.local : override.visita;
-                return nombre ? { nombre: nombre } : null;
+            if (override && (override.local || override.visita)) {
+                return {
+                    local: override.local ? { nombre: override.local } : null,
+                    visita: override.visita ? { nombre: override.visita } : null,
+                    manual: true
+                };
             }
 
-            if (faseIdx === 0) {
-                return obtenerGanadorBracket(-1, lado === 'L' ? matchIdx * 2 : matchIdx * 2 + 1);
-            }
-
-            return obtenerGanadorBracket(faseIdx - 1, lado === 'L' ? matchIdx * 2 : matchIdx * 2 + 1);
+            return {
+                local: obtenerGanadorBracket(faseIdx - 1, matchIdx * 2),
+                visita: obtenerGanadorBracket(faseIdx - 1, matchIdx * 2 + 1),
+                manual: false
+            };
         }
 
         function obtenerGanadorBracket(faseIdx, matchIdx) {
@@ -1521,19 +1551,23 @@ if (gl !== "" && gv !== "") {
                 return clasificados[semillas32[matchIdx] - 1]; 
             }
 
+            const equipos = obtenerEquiposEliminatoria(faseIdx, matchIdx);
+            const equipoL = equipos.local;
+            const equipoV = equipos.visita;
+
             let gL = dbGoles[`elim_${faseIdx}_p${matchIdx}_L`];
             let gV = dbGoles[`elim_${faseIdx}_p${matchIdx}_V`];
 
-            if (gL !== undefined && gV !== undefined) {
-                if (Number(gL) > Number(gV)) return obtenerEquipoLlave(faseIdx, matchIdx, 'L');
-                if (Number(gV) > Number(gL)) return obtenerEquipoLlave(faseIdx, matchIdx, 'V');
+            if (equipoL && equipoV && gL !== undefined && gV !== undefined) {
+                if (Number(gL) > Number(gV)) return equipoL;
+                if (Number(gV) > Number(gL)) return equipoV;
 
                 let pL = dbGoles[`elim_${faseIdx}_p${matchIdx}_L_pen`];
                 let pV = dbGoles[`elim_${faseIdx}_p${matchIdx}_V_pen`];
 
                 if (pL !== undefined && pV !== undefined) {
-                    if (Number(pL) > Number(pV)) return obtenerEquipoLlave(faseIdx, matchIdx, 'L');
-                    if (Number(pV) > Number(pL)) return obtenerEquipoLlave(faseIdx, matchIdx, 'V');
+                    if (Number(pL) > Number(pV)) return equipoL;
+                    if (Number(pV) > Number(pL)) return equipoV;
                 }
             }
 
@@ -1550,8 +1584,9 @@ if (gl !== "" && gv !== "") {
         dbGoles[key] = parseInt(val);
     }
 
-    let equipoL = obtenerEquipoLlave(fase, matchIdx, 'L');
-    let equipoV = obtenerEquipoLlave(fase, matchIdx, 'V');
+    const equipos = obtenerEquiposEliminatoria(fase, matchIdx);
+    let equipoL = equipos.local;
+    let equipoV = equipos.visita;
 
     let gl = dbGoles[`elim_${fase}_p${matchIdx}_L`];
     let gv = dbGoles[`elim_${fase}_p${matchIdx}_V`];
@@ -1579,6 +1614,8 @@ if (gl !== "" && gv !== "") {
 
    
 
+   
+
        function verFaseEliminatoria(faseIdx) {
     faseEliminatoriaGlobal = faseIdx;
 
@@ -1594,9 +1631,9 @@ if (gl !== "" && gv !== "") {
     for (let i = 0; i < numMatches; i++) {
         const info = calendarioEliminatorias[faseIdx]?.[i] || {};
         let override = dbLlavesManual[`${faseIdx}_${i}`];
-
-        let equipoL = obtenerEquipoLlave(faseIdx, i, 'L');
-        let equipoV = obtenerEquipoLlave(faseIdx, i, 'V');
+        let equipos = obtenerEquiposEliminatoria(faseIdx, i);
+        let equipoL = equipos.local;
+        let equipoV = equipos.visita;
 
         let gl = dbGoles[`elim_${faseIdx}_p${i}_L`] ?? "";
         let gv = dbGoles[`elim_${faseIdx}_p${i}_V`] ?? "";
@@ -1730,6 +1767,8 @@ if (gl !== "" && gv !== "") {
         local: local,
         visita: visita
     };
+
+    borrarDatosPosterioresDesde(fase, partido);
 
     localStorage.setItem(
         'bosch_llaves_manual',
@@ -2010,13 +2049,35 @@ function actualizarRelojGlobal() {
         return;
     }
 
-    const m = ultimoMarcadorActualizado;
+    let m = { ...ultimoMarcadorActualizado };
+
+    // Recalcular al momento de compartir para tomar la llave manual actual,
+    // no nombres viejos guardados en ultimoMarcadorActualizado.
+    if (m.tipo === "Eliminatoria") {
+        const fase = Number(m.fase);
+        const matchIdx = Number(m.llave) - 1;
+        const equipos = obtenerEquiposEliminatoria(fase, matchIdx);
+
+        if (equipos.local && equipos.visita) {
+            m.local = equipos.local.nombre;
+            m.visita = equipos.visita.nombre;
+        }
+
+        m.golesLocal = dbGoles[`elim_${fase}_p${matchIdx}_L`];
+        m.golesVisita = dbGoles[`elim_${fase}_p${matchIdx}_V`];
+        m.penalesLocal = dbGoles[`elim_${fase}_p${matchIdx}_L_pen`];
+        m.penalesVisita = dbGoles[`elim_${fase}_p${matchIdx}_V_pen`];
+    }
 
     let lineaResultado = `${m.local} ${m.golesLocal} - ${m.golesVisita} ${m.visita}`;
 
-    if (m.tipo === "Eliminatoria" && Number(m.golesLocal) === Number(m.golesVisita) && m.penalesLocal !== undefined && m.penalesVisita !== undefined) {
-        lineaResultado += `
-🥅 Penales: ${m.local} ${m.penalesLocal} - ${m.penalesVisita} ${m.visita}`;
+    if (
+        m.tipo === "Eliminatoria" &&
+        Number(m.golesLocal) === Number(m.golesVisita) &&
+        m.penalesLocal !== undefined &&
+        m.penalesVisita !== undefined
+    ) {
+        lineaResultado += `\n🥅 Penales: ${m.local} ${m.penalesLocal} - ${m.penalesVisita} ${m.visita}`;
     }
 
     const mensaje =
@@ -2037,6 +2098,7 @@ https://jesusvazquezesp-art.github.io/Quiniela-bosch-2026/`;
 
     window.open(url, "_blank");
 }
+
 
 async function iniciarApp() {
     console.log("Iniciando carga de datos...");
