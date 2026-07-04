@@ -1111,7 +1111,7 @@ async function descargarDesdeNube() {
 
 let esAdmin = false;
         let grupoSeleccionadoGlobal = "Grupo A";
-        let faseEliminatoriaGlobal = 0;
+        let faseEliminatoriaGlobal = 1;
 
         // Se usa una estructura más simple y estándar para evitar problemas de visualización
         const mapaBanderas = {
@@ -2121,6 +2121,8 @@ async function iniciarApp() {
 }
     setInterval(() => {
 
+        verFaseEliminatoria(1);
+        
     actualizarRelojGlobal();
     mostrarProximosPartidos();
 
