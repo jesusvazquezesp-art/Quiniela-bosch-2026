@@ -362,10 +362,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div id="panel-eliminatorias" class="panel active">
             <div class="sub-tabs">
                 <button id="btn-fase-0" class="sub-tab-btn" onclick="verFaseEliminatoria(0)">16VOS</button>
-                <button id="btn-fase-1" class="sub-tab-btn active" onclick="verFaseEliminatoria(1)">8VOS</button>
-                <button id="btn-fase-2" class="sub-tab-btn" onclick="verFaseEliminatoria(2)">CUARTOS</button>
+                <button id="btn-fase-1" class="sub-tab-btn" onclick="verFaseEliminatoria(1)">8VOS</button>
+                <button id="btn-fase-2" class="sub-tab-btn active" onclick="verFaseEliminatoria(2)">CUARTOS</button>
                 <button id="btn-fase-3" class="sub-tab-btn" onclick="verFaseEliminatoria(3)">SEMIS</button>
-                <button id="btn-fase-4" class="sub-tab-btn" onclick="verFaseEliminatoria(4)">FINAL</button>
+                <button id="btn-fase-4" class="sub-tab-btn" onclick="verFase(4)">FINAL</button>
             </div>
             
             <div id="lista-partidos-eliminatorias"></div>
@@ -1111,7 +1111,7 @@ async function descargarDesdeNube() {
 
 let esAdmin = false;
         let grupoSeleccionadoGlobal = "Grupo A";
-        let faseEliminatoriaGlobal = 1;
+        let faseEliminatoriaGlobal = 2;
 
         // Se usa una estructura más simple y estándar para evitar problemas de visualización
         const mapaBanderas = {
@@ -1219,7 +1219,7 @@ let esAdmin = false;
                 renderListaAsignados(); 
             }
             if (tab === 'grupos') construirMenuGrupos();
-            if (tab === 'eliminatorias') verFaseEliminatoria(1);
+            if (tab === 'eliminatorias') verFaseEliminatoria(2);
         }
 
         function actualizarPermisosRegistro() {
